@@ -78,9 +78,9 @@
                 <h3 id="创建RSA密钥对"><a href="#创建RSA密钥对" class="headerlink" title="创建RSA密钥对"></a>创建RSA密钥对</h3><p>本地PowerShell执行</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen</span><br></pre></td></tr></table></figure>
 
-<p><img src="/image/article/RSA%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90%E5%92%8CSSH%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8.assets/image-20231213101319408.png" alt="image-20231213101319408"></p>
+<p><img src="/image/article/RSA%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90%E5%92%8CSSH%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8/image-20231213101319408.png" alt="image-20231213101319408"></p>
 <p>生成公钥与私钥</p>
-<p><img src="/image/article/RSA%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90%E5%92%8CSSH%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8.assets/image-20231213101511797.png" alt="image-20231213101511797"></p>
+<p><img src="/image/article/RSA%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90%E5%92%8CSSH%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8/image-20231213101511797.png" alt="image-20231213101511797"></p>
 <h3 id="复制公钥到远程服务器"><a href="#复制公钥到远程服务器" class="headerlink" title="复制公钥到远程服务器"></a>复制公钥到远程服务器</h3><p>将xxx.pub私钥内容追加到服务器~&#x2F;.ssh&#x2F;authorized_keys文件中</p>
 <p>需要注意权限：（递归目录其他组和用户设置无权限）</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> -R go= ~/.ssh</span><br></pre></td></tr></table></figure>
