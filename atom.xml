@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2023-12-11T12:11:38.276Z</updated>
+  <updated>2023-12-13T02:30:53.950Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,48 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>RSA密钥生成和SSH自动登录远程服务器</title>
+    <link href="http://example.com/posts/1324925222/"/>
+    <id>http://example.com/posts/1324925222/</id>
+    <published>2023-12-13T02:10:24.000Z</published>
+    <updated>2023-12-13T02:30:53.950Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="创建RSA密钥对"><a href="#创建RSA密钥对" class="headerlink" title="创建RSA密钥对"></a>创建RSA密钥对</h3><p>本地PowerShell执行</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen</span><br></pre></td></tr></table></figure><p><img src="/image/article/RSA%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90%E5%92%8CSSH%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8.assets/image-20231213101319408.png" alt="image-20231213101319408"></p><p>生成公钥与私钥</p><p><img src="/image/article/RSA%E5%AF%86%E9%92%A5%E7%94%9F%E6%88%90%E5%92%8CSSH%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E8%BF%9C%E7%A8%8B%E6%9C%8D%E5%8A%A1%E5%99%A8.assets/image-20231213101511797.png" alt="image-20231213101511797"></p><h3 id="复制公钥到远程服务器"><a href="#复制公钥到远程服务器" class="headerlink" title="复制公钥到远程服务器"></a>复制公钥到远程服务器</h3><p>将xxx.pub私钥内容追加到服务器~&#x2F;.ssh&#x2F;authorized_keys文件中</p><p>需要注意权限：（递归目录其他组和用户设置无权限）</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> -R go= ~/.ssh</span><br></pre></td></tr></table></figure><h3 id="远程连接"><a href="#远程连接" class="headerlink" title="远程连接"></a>远程连接</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh root@1.1.1.1 -i &lt;path&gt;</span><br></pre></td></tr></table></figure><h3 id="vscode远程连接config"><a href="#vscode远程连接config" class="headerlink" title="vscode远程连接config"></a>vscode远程连接config</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Host &lt;Name&gt;</span><br><span class="line">  HostName &lt;IP&gt;</span><br><span class="line">  User ubuntu &lt;Username&gt;</span><br><span class="line">  IdentityFile &lt;RSApath&gt;</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">RSA密钥生成和SSH自动登录远程服务器</summary>
+    
+    
+    
+    <category term="web" scheme="http://example.com/category/web/"/>
+    
+    
+    <category term="网络安全" scheme="http://example.com/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>验证码的识别与爆破</title>
+    <link href="http://example.com/posts/2884547573/"/>
+    <id>http://example.com/posts/2884547573/</id>
+    <published>2023-12-11T12:14:21.000Z</published>
+    <updated>2023-12-13T02:31:10.816Z</updated>
+    
+    <content type="html"><![CDATA[<p>todo…</p>]]></content>
+    
+    
+    <summary type="html">验证码的识别与爆破</summary>
+    
+    
+    
+    <category term="web" scheme="http://example.com/category/web/"/>
+    
+    
+    <category term="网络安全" scheme="http://example.com/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
   
   <entry>
     <title>Chrome插件SwitchyOmega本地不代理解决</title>
