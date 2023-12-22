@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-siteapp">
     <title>
         
-            Chrome插件SwitchyOmega本地不代理解决
+            内网穿透及隧道搭建技术
         
     </title>
     <link rel="shortcut icon" href="#"/>
@@ -38,15 +38,15 @@
     <div class="vertical">
         <div class="inner">
             
-                <h1 class="header-subtitle">Chrome插件SwitchyOmega本地不代理解决</h1>
+                <h1 class="header-subtitle">内网穿透及隧道搭建技术</h1>
                 <div class="header-subinfo">
                     <p class="article-info-text">
                         <span>
-                            <i class="iconfont icon-time"></i> 发表时间：2023-12-11
+                            <i class="iconfont icon-time"></i> 发表时间：2023-12-22
                         </span>
                         
                             
-                                <span id="/posts/2657481293/" class="leancloud_visitors" data-flag-title="Chrome插件SwitchyOmega本地不代理解决">
+                                <span id="/posts/1154042679.html" class="leancloud_visitors" data-flag-title="内网穿透及隧道搭建技术">
                                     <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
                                 </span>
                             
@@ -75,12 +75,48 @@
         <div id="article">
             <div class="toc"></div>
             <div class="article-body">
-                <p>burp设置好代理后，发现127.0.01和localhost本地地址流量不经过burp</p>
-<p>解决方案：在不代理的地址列表中添加</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;-loopback&gt;</span><br></pre></td></tr></table></figure>
+                <h1 id="内网连通性判断"><a href="#内网连通性判断" class="headerlink" title="内网连通性判断"></a>内网连通性判断</h1><p>ICMP</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ping ip</span><br></pre></td></tr></table></figure>
 
-<p><img src="/image/article/Chrome%E6%8F%92%E4%BB%B6SwitchyOmega%E6%9C%AC%E5%9C%B0%E4%B8%8D%E4%BB%A3%E7%90%86%E8%A7%A3%E5%86%B3/image-20231211200052822.png" alt="image-20231211200052822"></p>
+<p>TCP</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nc -zv ip</span><br><span class="line">telnet ip port</span><br><span class="line">curl -vv telnet://&lt;ip:port&gt;</span><br></pre></td></tr></table></figure>
 
+<p>HTTP</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -vv &lt;ip:port&gt;</span><br></pre></td></tr></table></figure>
+
+<p>DNS</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nslookup &lt;domain&gt; &lt;dns&gt;</span><br></pre></td></tr></table></figure>
+
+<h1 id="SOCKS代理"><a href="#SOCKS代理" class="headerlink" title="SOCKS代理"></a>SOCKS代理</h1><h2 id="NPS"><a href="#NPS" class="headerlink" title="NPS"></a>NPS</h2><p><a target="_blank" rel="noopener" href="https://github.com/ehang-io/nps">https://github.com/ehang-io/nps</a></p>
+<h2 id="FRP"><a href="#FRP" class="headerlink" title="FRP"></a>FRP</h2><p><a target="_blank" rel="noopener" href="https://github.com/fatedier/frp">https://github.com/fatedier/frp</a></p>
+<h2 id="Venom-star"><a href="#Venom-star" class="headerlink" title="Venom :star:"></a>Venom :star:</h2><p><a target="_blank" rel="noopener" href="https://github.com/Dliv3/Venom">https://github.com/Dliv3/Venom</a></p>
+<p>感觉这个项目挺好的，可惜不知道为什么Ubuntu版本跑不起。如果光是Win或者CentOS还是挺好用</p>
+<h2 id="IOX​-​-star"><a href="#IOX​-​-star" class="headerlink" title="IOX​ ​ :star:"></a>IOX​ ​ :star:</h2><p><a target="_blank" rel="noopener" href="https://github.com/EddieIvan01/iox">https://github.com/EddieIvan01/iox</a></p>
+<p>比EW和LCX好用</p>
+<h3 id="建立Socks5方法"><a href="#建立Socks5方法" class="headerlink" title="建立Socks5方法"></a>建立Socks5方法</h3><p>配合proxychains和proxifier使用</p>
+<ul>
+<li><code>上线机器</code>开启Socks5的监听</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iox proxy -l 8888</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>VPS</code>开启监听转发流量9999&#x3D;&gt;8888</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iox proxy -l 9999 -l 8888</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>上线机器</code>执行转发</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iox proxy -r &lt;vps-ip&gt;:9999</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Socks5代理地址</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;vps-ip&gt;:8888</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="网络层隧道"><a href="#网络层隧道" class="headerlink" title="网络层隧道"></a>网络层隧道</h1><h2 id="ICMP"><a href="#ICMP" class="headerlink" title="ICMP"></a>ICMP</h2><h1 id="传输层隧道"><a href="#传输层隧道" class="headerlink" title="传输层隧道"></a>传输层隧道</h1><h1 id="应用层隧道"><a href="#应用层隧道" class="headerlink" title="应用层隧道"></a>应用层隧道</h1><h2 id="SSH"><a href="#SSH" class="headerlink" title="SSH"></a>SSH</h2><h2 id="HTTP-HTTPS"><a href="#HTTP-HTTPS" class="headerlink" title="HTTP&#x2F;HTTPS"></a>HTTP&#x2F;HTTPS</h2><h2 id="DNS"><a href="#DNS" class="headerlink" title="DNS"></a>DNS</h2>
                 
                 <p class="end">__END__</p>
             </div>
@@ -92,7 +128,7 @@
     <div class="suffix-box-right">
         <span class="suffix-box-title">文章作者：</span>tpaer
         <br>
-        <span class="suffix-box-title">文章出处：</span><a href="/posts/2657481293/" target="_blank">Chrome插件SwitchyOmega本地不代理解决</a>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/1154042679.html" target="_blank">内网穿透及隧道搭建技术</a>
         <br>
         <span class="suffix-box-title">作者签名：</span>nice or terrible.
         <br>
@@ -121,11 +157,8 @@
                 
                 <div class="article-prev-next">
                     
-                        <a href="/posts/2884547573/" class="prev-prefix">« </a> 上一篇：    <a href="/posts/2884547573/" title="发布于 2023-12-11 08:14">验证码的识别与爆破</a>
-                        <br>
                     
-                    
-                        <a href="/posts/452430507/" class="next-prefix">» </a> 下一篇：    <a href="/posts/452430507/" title="发布于 2023-11-24 03:10">vulnhub darkhole1 靶场通关</a>
+                        <a href="/posts/3584873491.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/3584873491.html" title="发布于 2023-12-20 06:30">利用CrossC2插件Linux上线CS</a>
                     
                 </div>
             </div>
@@ -173,8 +206,6 @@
                         <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
                     
                         <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
-                    
-                        <li class=""><a href="/comment" class="" target="_self"><span class="iconfont icon-comments-fill"></span>留言板</a></li>
                     
                 </ul> 
             </div> 
@@ -459,15 +490,6 @@
                     href   : "javascript:;",
                     type   : "",
                     class  : "search",
-                    target : "_self"
-                },
-            
-                {
-                    name   : "留言板",
-                    icon   : "icon-comments-fill",
-                    href   : "/comment",
-                    type   : "comment",
-                    class  : "",
                     target : "_self"
                 },
             

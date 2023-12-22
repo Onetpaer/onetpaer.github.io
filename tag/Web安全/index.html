@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-siteapp">
     <title>
         
-            Kali Linux网卡配置问题解决
+            标签 - Web安全
         
     </title>
     <link rel="shortcut icon" href="#"/>
@@ -33,36 +33,15 @@
 </head>
 <body>
     <a id="cover"></a>
-    <link type="text/css" rel="stylesheet" href="/css/post.css">
+    <link type="text/css" rel="stylesheet" href="/css/archive.css">
 <div id="header" class="header">
     <div class="vertical">
         <div class="inner">
             
-                <h1 class="header-subtitle">Kali Linux网卡配置问题解决</h1>
+                <h1 class="header-subtitle">标签归档</h1>
                 <div class="header-subinfo">
-                    <p class="article-info-text">
-                        <span>
-                            <i class="iconfont icon-time"></i> 发表时间：2023-12-14
-                        </span>
-                        
-                            
-                                <span id="/posts/1283819788/" class="leancloud_visitors" data-flag-title="Kali Linux网卡配置问题解决">
-                                    <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
-                                </span>
-                            
-                              
-                        
-                    </p>
-                    
-                        
-                            <span class="category-color">web</span>
-                        
-                    
-                    
-                        
-                            <span class="tag-color">网络安全</span>
-                        
-                    
+                    <p class="article-info-text Chinese"></p>
+                    <p class="article-info-text English"></p>                  
                 </div>
             
         </div>
@@ -71,74 +50,37 @@
 </div>
 <div id="container">
     
-        <!-- 文章页面 -->
-        <div id="article">
-            <div class="toc"></div>
-            <div class="article-body">
-                <p>虚拟机双网卡，新增1个</p>
-<p><img src="/image/article/Kali-Linux%E7%BD%91%E5%8D%A1%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3.assets/image-20231214093209346.png" alt="image-20231214093209346"></p>
-<h3 id="修改配置"><a href="#修改配置" class="headerlink" title="修改配置"></a>修改配置</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/network/interfaces</span><br></pre></td></tr></table></figure>
-
-<p>静态IP配置</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">auto eth1</span><br><span class="line">iface eth1 inet static</span><br><span class="line">address 10.251.5.130</span><br><span class="line">netmask 255.255.255.0</span><br><span class="line">gateway 10.251.5.254</span><br></pre></td></tr></table></figure>
-
-<p>DHCP配置</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auto eth1</span><br><span class="line">iface eth1 inet dhcp</span><br></pre></td></tr></table></figure>
-
-<p>修改完成后重启网络</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service networking restart</span><br></pre></td></tr></table></figure>
-
-
-                
-                <p class="end">__END__</p>
-            </div>
-            <div class="article-footer">
-                <div class="suffix-box">
-    <div class="suffix-box-left">
-        <img src="/image/sidebar/avatar.png" alt="tpaer">
-    </div>
-    <div class="suffix-box-right">
-        <span class="suffix-box-title">文章作者：</span>tpaer
-        <br>
-        <span class="suffix-box-title">文章出处：</span><a href="/posts/1283819788/" target="_blank">Kali Linux网卡配置问题解决</a>
-        <br>
-        <span class="suffix-box-title">作者签名：</span>nice or terrible.
-        <br>
-        <span class="suffix-box-title">关于主题：</span><a href="" target="_blank"></a>
-        <br>
-        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
-        <br>
-    </div>
-    <div style="clear: both;"></div>
-</div>
-                
-                    <div class="category">
-                        分类：
+        
+            <!-- 归档页面、分类归档页面、标签归档页面 -->
+            <div class="articles">
+                <div class="articles-wrap">
+                    <span class="archive-move-on"></span>
+                    <span class="archive-counter">
                         
-                            <a href="/category/web/">web</a>
+                            当前标签：<span class="tag">Web安全</span>
                         
-                    </div>
-                
-                
-                    <div class="tag">
-                        标签：
-                        
-                            <a href="/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
-                        
-                    </div>
-                
-                <div class="article-prev-next">
-                    
-                        <a href="/posts/4207397671/" class="prev-prefix">« </a> 上一篇：    <a href="/posts/4207397671/" title="发布于 2023-12-14 11:30">Burpsuit指纹识别及反制绕过</a>
-                        <br>
+                    </span>
                     
                     
-                        <a href="/posts/1324925222/" class="next-prefix">» </a> 下一篇：    <a href="/posts/1324925222/" title="发布于 2023-12-13 10:10">RSA密钥生成和SSH自动登录远程服务器</a>
+                        
+                            <div class="archive-title">
+                                <h2 class="archive-year">2023</h2>
+                            </div>
+                            
+                           
+                        <div class="article">
+                            <div class="article-header">
+                                <h1 class="article-title"><a href="/posts/2884547573.html"><span>验证码的识别与爆破</span></a></h1>
+                                <div class="article-meta">
+                                    <span class="article-time">12-11</span>
+                                </div>
+                            </div>
+                        </div>
                     
                 </div>
             </div>
-             
-        </div>
+            
+        
     
 </div>
     <div id="footer">
@@ -181,8 +123,6 @@
                         <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
                     
                         <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
-                    
-                        <li class=""><a href="/comment" class="" target="_self"><span class="iconfont icon-comments-fill"></span>留言板</a></li>
                     
                 </ul> 
             </div> 
@@ -467,15 +407,6 @@
                     href   : "javascript:;",
                     type   : "",
                     class  : "search",
-                    target : "_self"
-                },
-            
-                {
-                    name   : "留言板",
-                    icon   : "icon-comments-fill",
-                    href   : "/comment",
-                    type   : "comment",
-                    class  : "",
                     target : "_self"
                 },
             

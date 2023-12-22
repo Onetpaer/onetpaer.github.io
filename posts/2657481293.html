@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-siteapp">
     <title>
         
-            Burpsuit指纹识别及反制绕过
+            Chrome插件SwitchyOmega本地不代理解决
         
     </title>
     <link rel="shortcut icon" href="#"/>
@@ -38,22 +38,18 @@
     <div class="vertical">
         <div class="inner">
             
-                <h1 class="header-subtitle">Burpsuit指纹识别及反制绕过</h1>
+                <h1 class="header-subtitle">Chrome插件SwitchyOmega本地不代理解决</h1>
                 <div class="header-subinfo">
                     <p class="article-info-text">
                         <span>
-                            <i class="iconfont icon-time"></i> 发表时间：2023-12-14
+                            <i class="iconfont icon-time"></i> 发表时间：2023-12-11
                         </span>
                         
                             
-                                <span id="/posts/4207397671/" class="leancloud_visitors" data-flag-title="Burpsuit指纹识别及反制绕过">
+                                <span id="/posts/2657481293.html" class="leancloud_visitors" data-flag-title="Chrome插件SwitchyOmega本地不代理解决">
                                     <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
                                 </span>
                             
-                            
-                                <span>
-                                    <i class="iconfont icon-interactive"></i> 评论：<span class="valine-comment-count" data-xid="/posts/4207397671/"></span>
-                                </span>
                               
                         
                     </p>
@@ -79,12 +75,11 @@
         <div id="article">
             <div class="toc"></div>
             <div class="article-body">
-                <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在一次渗透过程中使用Burp抓包无返回结果</p>
-<p><a target="_blank" rel="noopener" href="https://ares-x.com/2021/04/18/SSL-%E6%8C%87%E7%BA%B9%E8%AF%86%E5%88%AB%E5%92%8C%E7%BB%95%E8%BF%87/">https://ares-x.com/2021/04/18/SSL-%E6%8C%87%E7%BA%B9%E8%AF%86%E5%88%AB%E5%92%8C%E7%BB%95%E8%BF%87/</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.wangan.com/p/11v6c38e52815c44">https://www.wangan.com/p/11v6c38e52815c44</a></p>
-<p><a target="_blank" rel="noopener" href="https://github.com/sleeyax/burp-awesome-tls">https://github.com/sleeyax/burp-awesome-tls</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.ddosi.org/burp-awesome-tls/">https://www.ddosi.org/burp-awesome-tls/</a></p>
-<p><a target="_blank" rel="noopener" href="https://blog.gm7.org/%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E5%BA%93/01.%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/06.%E4%BF%9D%E6%8A%A4%E8%87%AA%E5%B7%B1/02.%E9%98%B2%E6%AD%A2burp%E8%A2%AB%E8%AF%86%E5%88%AB">https://blog.gm7.org/%E4%B8%AA%E4%BA%BA%E7%9F%A5%E8%AF%86%E5%BA%93/01.%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/06.%E4%BF%9D%E6%8A%A4%E8%87%AA%E5%B7%B1/02.%E9%98%B2%E6%AD%A2burp%E8%A2%AB%E8%AF%86%E5%88%AB</a></p>
+                <p>burp设置好代理后，发现127.0.01和localhost本地地址流量不经过burp</p>
+<p>解决方案：在不代理的地址列表中添加</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;-loopback&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/image/article/Chrome%E6%8F%92%E4%BB%B6SwitchyOmega%E6%9C%AC%E5%9C%B0%E4%B8%8D%E4%BB%A3%E7%90%86%E8%A7%A3%E5%86%B3/image-20231211200052822.png" alt="image-20231211200052822"></p>
 
                 
                 <p class="end">__END__</p>
@@ -97,7 +92,7 @@
     <div class="suffix-box-right">
         <span class="suffix-box-title">文章作者：</span>tpaer
         <br>
-        <span class="suffix-box-title">文章出处：</span><a href="/posts/4207397671/" target="_blank">Burpsuit指纹识别及反制绕过</a>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/2657481293.html" target="_blank">Chrome插件SwitchyOmega本地不代理解决</a>
         <br>
         <span class="suffix-box-title">作者签名：</span>nice or terrible.
         <br>
@@ -126,25 +121,15 @@
                 
                 <div class="article-prev-next">
                     
-                        <a href="/posts/3240233657/" class="prev-prefix">« </a> 上一篇：    <a href="/posts/3240233657/" title="发布于 2023-12-16 02:39">HTTP请求走私HRS攻击</a>
+                        <a href="/posts/2884547573.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/2884547573.html" title="发布于 2023-12-11 08:14">验证码的识别与爆破</a>
                         <br>
                     
                     
-                        <a href="/posts/1283819788/" class="next-prefix">» </a> 下一篇：    <a href="/posts/1283819788/" title="发布于 2023-12-14 09:30">Kali Linux网卡配置问题解决</a>
+                        <a href="/posts/452430507.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/452430507.html" title="发布于 2023-11-24 03:10">vulnhub darkhole1 靶场通关</a>
                     
                 </div>
             </div>
-            
-    <div class="article-comments">
-        
-            <div class="comments-title">
-                评论列表
-            </div>
-        
-        <div class="comments-content"></div>
-    </div>
-    
- 
+             
         </div>
     
 </div>
@@ -188,8 +173,6 @@
                         <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
                     
                         <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
-                    
-                        <li class=""><a href="/comment" class="" target="_self"><span class="iconfont icon-comments-fill"></span>留言板</a></li>
                     
                 </ul> 
             </div> 
@@ -474,15 +457,6 @@
                     href   : "javascript:;",
                     type   : "",
                     class  : "search",
-                    target : "_self"
-                },
-            
-                {
-                    name   : "留言板",
-                    icon   : "icon-comments-fill",
-                    href   : "/comment",
-                    type   : "comment",
-                    class  : "",
                     target : "_self"
                 },
             
