@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>
+        
+            挖掘白加黑DLL劫持漏洞
+        
+    </title>
+    <link rel="shortcut icon" href="#"/>
+
+    <link type="text/css" rel="stylesheet" href="/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSerifSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="/font/Roboto.css">
+    <link type="text/css" rel="stylesheet" href="/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="/css/base.css">
+    <link type="text/css" rel="stylesheet" href="/css/code.css">
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="TPA HACK-NOTE" type="application/atom+xml">
+</head>
+<body>
+    <a id="cover"></a>
+    <link type="text/css" rel="stylesheet" href="/css/post.css">
+<div id="header" class="header">
+    <div class="vertical">
+        <div class="inner">
+            
+                <h1 class="header-subtitle">挖掘白加黑DLL劫持漏洞</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2024-02-21
+                        </span>
+                        
+                            
+                                <span id="/posts/3411119311.html" class="leancloud_visitors" data-flag-title="挖掘白加黑DLL劫持漏洞">
+                                    <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                                </span>
+                            
+                              
+                        
+                    </p>
+                    
+                        
+                            <span class="category-color">web</span>
+                        
+                    
+                    
+                        
+                            <span class="tag-color">网络安全</span>
+                        
+                    
+                </div>
+            
+        </div>
+    </div>
+    
+</div>
+<div id="container">
+    
+        <!-- 文章页面 -->
+        <div id="article">
+            <div class="toc"></div>
+            <div class="article-body">
+                <h1 id="挖掘白加黑DLL劫持漏洞"><a href="#挖掘白加黑DLL劫持漏洞" class="headerlink" title="挖掘白加黑DLL劫持漏洞"></a>挖掘白加黑DLL劫持漏洞</h1><p>Tips:</p>
+<p>白程序+黑DLL</p>
+<p>黑DLL需要优先正常DLL目录，并且DLL不在WIndows KnowDLLs列表中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg query &quot;HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221102021774.png" alt="image-20240221102021774"></p>
+<p>DLL劫持分为两种：</p>
+<p>1.劫持不存在的DLL</p>
+<p>2.劫持已存在的DLL</p>
+<h2 id="准备测试DLL"><a href="#准备测试DLL" class="headerlink" title="准备测试DLL"></a>准备测试DLL</h2><p>准备一个弹计算器的DLL 运行库MT编译x64和x86版本</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;pch.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">BOOL APIENTRY <span class="title function_">DllMain</span><span class="params">( HMODULE hModule,</span></span><br><span class="line"><span class="params">                       DWORD  ul_reason_for_call,</span></span><br><span class="line"><span class="params">                       LPVOID lpReserved</span></span><br><span class="line"><span class="params">                     )</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">switch</span> (ul_reason_for_call)</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="comment">//DLL进程装载</span></span><br><span class="line">    <span class="keyword">case</span> DLL_PROCESS_ATTACH:</span><br><span class="line">        system(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">    <span class="comment">//DLL线程装载</span></span><br><span class="line">    <span class="keyword">case</span> DLL_THREAD_ATTACH:</span><br><span class="line">    <span class="comment">//DLL线程卸载</span></span><br><span class="line">    <span class="keyword">case</span> DLL_THREAD_DETACH:</span><br><span class="line">    <span class="comment">//DLL进程卸载</span></span><br><span class="line">    <span class="keyword">case</span> DLL_PROCESS_DETACH:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> TRUE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="劫持不存在的DLL"><a href="#劫持不存在的DLL" class="headerlink" title="劫持不存在的DLL"></a>劫持不存在的DLL</h2><p>这种是最简单的情况</p>
+<p>劫持程序uc.exe</p>
+<p>利用Process Monitor工具 首先添加filter</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Process name uc.exe</span><br><span class="line">Result is NAME NOT FOUND</span><br><span class="line">Path ends with .dll</span><br></pre></td></tr></table></figure>
+
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113144776.png" alt="image-20240221113144776"></p>
+<p>返回结果中找到iconv.dll</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113234544.png" alt="image-20240221113234544"></p>
+<p>其stack调用了LoadLibrary函数</p>
+<blockquote>
+<p><code>LoadLibrary</code>和<code>LoadLibraryEx</code>一个是本地加载，一个是远程加载，如果DLL不在调用的同一目录下，就可以使用<code>LoadLibrary(L&quot;DLL绝对路径&quot;)</code>加载。但是如果DLL内部又调用一个DLL，就需要使用<code>LoadLibraryEx</code>进行远程加载</p>
+</blockquote>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113404722.png" alt="image-20240221113404722"></p>
+<p>在iconv.dll同级目录下都是x64位的，所以替换的也是x64位dll</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113517102.png" alt="image-20240221113517102"></p>
+<p>替换后启动uc.exe，成功弹出计算器</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113558921.png" alt="image-20240221113558921"></p>
+<h2 id="劫持已存在的DLL"><a href="#劫持已存在的DLL" class="headerlink" title="劫持已存在的DLL"></a>劫持已存在的DLL</h2><p>还是利用Process Monitor添加filter</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221150006453.png" alt="image-20240221150006453"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Process name uc.exe</span><br><span class="line">Result is SUCCESS</span><br><span class="line">Path begins with D:\UltraCompare</span><br></pre></td></tr></table></figure>
+
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221145848438.png" alt="image-20240221145848438"></p>
+<p>这里可以采用DLL转发方式，可以利用工具AheadLib+，但是这个工具内联了__asm在VS2022x64下不支持，只能用来生成x86的dll</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221131153988.png" alt="image-20240221131153988"></p>
+<p>在github上找到了个好用的工具：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/strivexjun/AheadLib-x86-x64">https://github.com/strivexjun/AheadLib-x86-x64</a></p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151226028.png" alt="image-20240221151226028"></p>
+<p>点击Makefile后生成2个文件</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151340085.png" alt="image-20240221151340085"></p>
+<p>VS新建DLL项目导入这两个文件</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151425359.png" alt="image-20240221151425359"></p>
+<p>.asm文件需要设置属性</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">把 .asm 文件添加到工程一次</span><br><span class="line">右键单击文件-属性-常规-</span><br><span class="line">项类型:自定义生成工具</span><br><span class="line">从生成中排除:否</span><br><span class="line"></span><br><span class="line">然后复制下面命令填入</span><br><span class="line">命令行: ml64 /Fo $(IntDir)%(fileName).obj /c /Cp %(fileName).asm</span><br><span class="line">输出: $(IntDir)%(fileName).obj;%(Outputs)</span><br><span class="line">链接对象: 是</span><br></pre></td></tr></table></figure>
+
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151535574.png" alt="image-20240221151535574"></p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151544478.png" alt="image-20240221151544478"></p>
+<p>之后运行库改MT，开始修改代码新增弹计算器的代码</p>
+<p>老哥在生成的代码里加了新建线程执行，避免了白加黑CS的死锁问题</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151928771.png" alt="image-20240221151928771"></p>
+<p>之后又改了转发文件的代码转发到同目录的zlib1Org.dll</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152026911.png" alt="image-20240221152026911"></p>
+<p>因为找不到shlwapi.h文件一些API找不到标识符</p>
+<p>在framework.h中添加#include &lt;shlwapi.h&gt;</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152141898.png" alt="image-20240221152141898"></p>
+<p>可以正常编译了，直接编译DLL</p>
+<p>将编译好的DLL改名zlib1.dll原来的DLL改名zlib1Org.dll</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152353758.png" alt="image-20240221152353758"></p>
+<p>启动uc.exe 成功弹出计算器</p>
+<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152458563.png" alt="image-20240221152458563"></p>
+
+                
+                <p class="end">__END__</p>
+            </div>
+            <div class="article-footer">
+                <div class="suffix-box">
+    <div class="suffix-box-left">
+        <img src="/image/sidebar/avatar.png" alt="tpaer">
+    </div>
+    <div class="suffix-box-right">
+        <span class="suffix-box-title">文章作者：</span>tpaer
+        <br>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/3411119311.html" target="_blank">挖掘白加黑DLL劫持漏洞</a>
+        <br>
+        <span class="suffix-box-title">作者签名：</span>nice or terrible.
+        <br>
+        <span class="suffix-box-title">关于主题：</span><a href="" target="_blank"></a>
+        <br>
+        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+        <br>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+                
+                    <div class="category">
+                        分类：
+                        
+                            <a href="/category/web/">web</a>
+                        
+                    </div>
+                
+                
+                    <div class="tag">
+                        标签：
+                        
+                            <a href="/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+                        
+                    </div>
+                
+                <div class="article-prev-next">
+                    
+                        <a href="/posts/3277396716.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/3277396716.html" title="发布于 2024-02-21 02:13">MinGW-w64的安装与使用</a>
+                        <br>
+                    
+                    
+                        <a href="/posts/666266413.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/666266413.html" title="发布于 2024-02-20 10:40">360核晶下的dumplsass</a>
+                    
+                </div>
+            </div>
+             
+        </div>
+    
+</div>
+    <div id="footer">
+    <div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>
+</div>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        
+            <div class="menu-notice">
+                <span class="iconfont icon-notice"></span>
+                <div class="notice">
+                    <span>Tpaer Blog</span>
+                </div>
+            </div>
+        
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar">
+                    <img src="/image/sidebar/avatar.png">
+                </div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user">
+                        
+                            <a href="https://onetpaer.github.io" target="_blank"><span>tpaer</span></a>
+                        
+                    </div>
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul>
+                    
+                        <li class=""><a href="/" class="" target="_self"><span class="iconfont icon-home-fill"></span>首页</a></li>
+                    
+                        <li class=""><a href="/category" class="" target="_self"><span class="iconfont icon-folder-fill"></span>分类</a></li>
+                    
+                        <li class=""><a href="/tag" class="" target="_self"><span class="iconfont icon-discount-fill"></span>标签</a></li>
+                    
+                        <li class=""><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
+                    
+                        <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
+                    
+                        <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
+                    
+                </ul> 
+            </div> 
+            <div class="menu-link">
+                <div class="box">
+                    <div class="image-box"></div>
+                </div>
+                
+                    <a name="GitHub" href="https://github.com/onetpaer" class="" target="_blank" data=""><span class="iconfont icon-github"></span></a>
+                
+            </div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="/css/search.css">
+<script type="text/javascript" src="/js/iscroll.js"></script>
+<script type="text/javascript" src="/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+    
+    <link type="text/css" rel="stylesheet" href="/css/APlayer.css">
+    <script type="text/javascript" src="/js/APlayer.min.js"></script>
+    <script type="text/javascript" src="/js/Meting.min.js"></script>
+    <script>
+        var meting_api = 'https://api.i-meto.com/meting/api?server=:server&type=:type&id=:id&auth=:auth&r=:r';
+    </script>
+    <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+
+    <div class="wrap-right">
+    <div class="wrap-right-hide">
+         <div class="wrap-right-button favorites">
+            <div class="iconbox" switch="false">
+                <span class="iconfont icon-favorites"></span>
+            </div>
+            <span class="icontext">关注</span>
+         </div>
+        <div class="wrap-right-button search">
+            <div class="iconbox">
+                <span class="iconfont icon-search-menu"></span>
+            </div>
+            <span class="icontext">搜索</span>
+        </div>
+        <div class="wrap-right-button menu-button">
+            <div class="iconbox">
+                <span class="iconfont icon-menu"></span>
+            </div>
+            <span class="icontext">菜单</span>
+        </div>
+        <div class="wrap-right-button mode">
+            <div class="light">
+                <div class="iconbox">
+                    <span class="iconfont icon-daymode"></span>
+                </div>
+                <span class="icontext">浅色模式</span>
+            </div>
+            <div class="dark">
+                <div class="iconbox">
+                    <span class="iconfont icon-nightmode-fill"></span>
+                </div>
+                <span class="icontext">深色模式</span>
+            </div>
+        </div>
+        <div class="wrap-right-button bottom">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">跳至底部</span>
+        </div>
+    </div>
+    <div class="wrap-right-show">
+        <div class="wrap-right-button set">
+            <div class="iconbox">
+                <span class="iconfont icon-setting"></span>
+            </div>
+            <span class="icontext">设置</span>
+        </div>
+        <div class="wrap-right-button top">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">返回顶部</span>
+        </div>
+    </div>
+</div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : "onetpaer",
+        GitHubRepositories : "hacker-note",
+
+        User             : "tpaer",
+        UserAvatar       : "/image/sidebar/avatar.png",
+        WebsiteStartDate : "2023-01-01",
+        Home             : "https://onetpaer.github.io",
+
+        WebsiteTitleBlur         : "(◍´꒳`◍) Hi, Tpaer BLOG",
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : "(*´∇｀*) Welcome back!",
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : {
+            light : "/image/website/logo/tlogo.png",
+            dark  : "/image/website/logo/tlogo.png"
+        },
+
+        ProgressBar : {
+            id       : "topProgressBar",
+            color    : "#77B6FF",
+            height   : "2px",
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound : {
+                tension  : 16,
+                friction : 5
+            },
+            spinner : {
+                id     : "spinner",
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : "#F0F0F0",
+                    stroke     : "#272633",
+                    base       : "",
+                    child      : "#272633"
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : "rgba(255, 255, 255, .2)",
+            clearOffset : 0.3
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : "60%",
+            colorBrightness  : "50%",
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : "random",
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                "/image/header/home.png",
+            
+        ],
+        HomeBannerText  : "Cybersecurity",
+
+        ArticleHeaderImage : [
+            
+                "/image/header/article.png",
+            
+                "/image/header/article3.png",
+            
+                "/image/header/article4.png",
+            
+        ],
+
+        OtherBannerText : "All because of love",
+
+        Error : {
+            icon    : "icon-swimming",
+            title   : "PAGE NOT FOUND",
+            content : [
+                
+                    "很抱歉，您访问的页面不存在！",
+                
+                    "可能是输入地址有误或该地址已变更。",
+                
+            ],
+            buttons : [
+                
+                    {
+                        icon  : "icon-home",
+                        text  : "返回首页",
+                        href  : "/",
+                        class : ""
+                    },
+                
+            ]
+        },
+
+        MenuNotice : {
+            enable : true,
+            notice : "Tpaer Blog",
+            speed  : 20
+        },
+        MenuList : [
+            
+                {
+                    name   : "首页",
+                    icon   : "icon-home-fill",
+                    href   : "/",
+                    type   : "index",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "分类",
+                    icon   : "icon-folder-fill",
+                    href   : "/category",
+                    type   : "category",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "标签",
+                    icon   : "icon-discount-fill",
+                    href   : "/tag",
+                    type   : "tag",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "归档",
+                    icon   : "icon-calendar-fill",
+                    href   : "/archive",
+                    type   : "archive",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "关于",
+                    icon   : "icon-about-fill",
+                    href   : "/about",
+                    type   : "about",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "搜索",
+                    icon   : "icon-search-menu",
+                    href   : "javascript:;",
+                    type   : "",
+                    class  : "search",
+                    target : "_self"
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        name   : "GitHub",
+                        icon   : "icon-github",
+                        href   : "https://github.com/onetpaer",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : "<div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>",
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                "Tpaer Blog",
+                            
+                                "",
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : "",
+
+        Donate : {
+            paypal  : "",
+            bitcoin : "",
+            alipay  : "/image/donate/alipay.png",
+            wechat  : "/image/donate/wechat.png"
+        },
+
+        Search : {
+            applicationID : "TIB5V1ZDSN",
+            apiKey        : "50d0249e92080e370df32275e4511295",
+            indexName     : "onetpaer",
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : "搜索",
+                empty       : "未发现与 「${query}」 相关的内容",
+                stats       : "${hits} 条相关条目，使用了 ${time} 毫秒",
+            }
+        }, 
+
+        Comment : {
+            switch : true,
+            type   : "Valine",
+        },
+
+        Waline : {
+            el              : ".comments-content",
+            serverURL       : "",
+            path            : window.location.pathname,
+            meta            : "['nick', 'mail', 'link']",
+            requiredMeta    : "['nick', 'mail']",
+            pageSize        : 10,
+            lang            : "zh-cn",
+            locale: {
+                admin       : "博主",
+                anonymous   : "匿名用户",
+                sofa        : "快来做第一个评论的人吧 ~",
+                placeholder : "你是我一生只会遇见一次的惊喜...",
+            },
+            dark            : "html[color-scheme='dark']",
+            search          : false,
+            pageview        : true,
+            comment         : true,
+            copyright       : false,
+        },
+
+        Valine : {
+            el             : ".comments-content",
+            appId          : "srhKtvWPQTWYKh3qX8G8M7v0-gzGzoHsz",
+            appKey         : "8uVSP1q6UlALVC5igYfIfv2h",
+            serverURLs     : "",
+            placeholder    : "你是我一生只会遇见一次的惊喜...",
+            avatar         : "mm",
+            meta           : "nick,mail,link",
+            requiredFields : "nick,mail",
+            pageSize       : 5,
+            lang           : "zh-cn",
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : ".toc",
+            contentSelector       : ".article-body",
+            headingSelector       : "h1, h2, h3, h4, h5",
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : ".toc",
+            positionFixedClass    : "toc-fixed",
+            fixedSidebarOffset    : "",
+        },
+
+        Require : {
+            baseUrl     : "/js/",
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : "Meting"
+        },
+        APlayer : {
+            container : ".aplayer",
+            fixed     : true,
+            autoplay  : false,
+            loop      : "all",
+            order     : "random",
+            preload   : "auto",
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : "Endless Tears",
+                        artist : "CLIFF EDGE",
+                        cover  : "/music/cover/Endless Tears.jpg",
+                        url    : "/music/song/Endless Tears.mp3",
+                        lrc    : "/music/lrc/Endless Tears.lrc"
+                    },
+                
+            ]
+        },
+        Meting : {
+            api      : "https://api.i-meto.com/meting/api",
+            id       : "3778678", 
+            lrcshow  : false, 
+            server   : "netease", 
+            type     : "playlist", 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : "all", 
+            order    : "random", 
+            preload  : "auto", 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        Mouse : {
+            enable  : true,
+            options : {
+                size  : 6,
+                sizeF : 24
+            }
+        },
+
+        LazyLoad : {
+            default : "/image/website/lazyload.svg"
+        },
+  
+        Style : {
+            aplayer          : "/css/APlayer.css",
+            archive          : "/css/archive.css",
+            base             : "/css/base.css",
+            clipboard        : "/css/clipboard.css",
+            code             : "/css/code.css",
+            donate           : "/css/donate.css",
+            fancybox         : "/css/jquery.fancybox.css",
+            footer           : "/css/footer.css",
+            iconfont         : "/iconfont/iconfont.css",
+            index            : "/css/index.css",
+            menuBubble       : "/css/menu-bubble.css",
+            mouse            : "/css/mouse.css",
+            page             : "/css/page.css",
+            post             : "/css/post.css",
+            search           : "/css/search.css",
+            tocbot           : "/css/tocbot.css",
+            valine           : "/css/valine.css",
+            waline           : "/css/waline.css",
+            walineCustom     : "/css/waline-custom.css"
+        },
+
+        Script: {
+            aplayer          : "/js/APlayer.min.js",
+            config           : "/js/require.config.js",
+            index            : "/js/index.js",
+            instantSearch    : "/js/instantsearch.min.js",
+            iscroll          : "/js/iscroll.js",
+            jQuery           : "/js/jquery-3.4.1.min.js",
+            loading          : "/js/loading.js",
+            meting           : "/js/Meting.min.js",
+            require          : "/js/require.min.js",
+            waline           : "/js/waline.mjs",
+            pageview         : "/js/pageview.mjs",
+            comment          : "/js/comment.mjs",
+        },
+
+        Font: {
+            LongCang    : "/font/LongCang.css",
+            Monda       : "/font/Monda.css",
+            NotoSansSC  : "/font/NotoSansSC.css",
+            NotoSerifSC : "/font/NotoSerifSC.css",
+            Playball    : "/font/Playball.css",
+            PTMono      : "/font/PTMono.css",
+            Roboto      : "/font/Roboto.css",
+            RobotoSlab  : "/font/RobotoSlab.css",
+            Rosario     : "/font/Rosario.css",
+            UbuntuMono  : "/font/UbuntuMono.css"
+        },
+
+        Suffix : {
+            about : "nice or terrible."
+        },
+            
+        Theme : {
+            url  : "",
+            name : ""
+        }  
+    };
+</script>
+    <script type="text/javascript" src="/js/index.js"></script>
+</body>
+</html>

