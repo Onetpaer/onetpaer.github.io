@@ -38,27 +38,6 @@
   </entry>
   
   <entry>
-    <title>MinGW-w64的安装与使用</title>
-    <link href="http://example.com/posts/3277396716.html"/>
-    <id>http://example.com/posts/3277396716.html</id>
-    <published>2024-02-21T06:13:52.000Z</published>
-    <updated>2024-03-03T14:43:51.552Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="MinGW-w64的安装与使用"><a href="#MinGW-w64的安装与使用" class="headerlink" title="MinGW-w64的安装与使用"></a>MinGW-w64的安装与使用</h1><h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>下载地址：</p><p><a href="https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/">https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/</a></p><p>下翻找到下载</p><p><img src="/image/article/MinGW-w64%E7%9A%84%E5%AE%89%E8%A3%85%E4%B8%8E%E4%BD%BF%E7%94%A8.assets/image-20240221141514770.png" alt="image-20240221141514770"></p><p>解压到一个目录</p><p><img src="/image/article/MinGW-w64%E7%9A%84%E5%AE%89%E8%A3%85%E4%B8%8E%E4%BD%BF%E7%94%A8.assets/image-20240221141856730.png" alt="image-20240221141856730"></p><p>将bin目录配置到环境变量</p>]]></content>
-    
-    
-    <summary type="html">MinGW-w64的安装与使用</summary>
-    
-    
-    
-    <category term="免杀" scheme="http://example.com/category/%E5%85%8D%E6%9D%80/"/>
-    
-    
-    <category term="工具使用" scheme="http://example.com/tag/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/"/>
-    
-  </entry>
-  
-  <entry>
     <title>挖掘白加黑DLL劫持漏洞</title>
     <link href="http://example.com/posts/3411119311.html"/>
     <id>http://example.com/posts/3411119311.html</id>
@@ -433,6 +412,27 @@
     
     
     <category term="内网安全" scheme="http://example.com/tag/%E5%86%85%E7%BD%91%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>VMware虚拟机Ubuntu忘记密码解决</title>
+    <link href="http://example.com/posts/2034176186.html"/>
+    <id>http://example.com/posts/2034176186.html</id>
+    <published>2023-12-26T08:27:00.000Z</published>
+    <updated>2024-03-03T14:44:04.683Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="1-重启虚拟机长按shift"><a href="#1-重启虚拟机长按shift" class="headerlink" title="1.重启虚拟机长按shift"></a>1.重启虚拟机长按shift</h3><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226162851841.png" alt="image-20231226162851841"></p><h3 id="2-按e进入如下页面，找到ro后面修改为"><a href="#2-按e进入如下页面，找到ro后面修改为" class="headerlink" title="2.按e进入如下页面，找到ro后面修改为"></a>2.按e进入如下页面，找到ro后面修改为</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">quiet splash rw init=/bin/bash</span><br></pre></td></tr></table></figure><p>修改前：</p><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226163728987.png" alt="image-20231226163728987"></p><p>修改后</p><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226163807102.png" alt="image-20231226163807102"></p><h3 id="3-按Ctrl-X或F10"><a href="#3-按Ctrl-X或F10" class="headerlink" title="3.按Ctrl+X或F10"></a>3.按Ctrl+X或F10</h3><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226163917410.png" alt="image-20231226163917410"></p><h3 id="4-修改密码，输入两次新密码"><a href="#4-修改密码，输入两次新密码" class="headerlink" title="4.修改密码，输入两次新密码"></a>4.修改密码，输入两次新密码</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">passwd 用户名</span><br></pre></td></tr></table></figure><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226164022346.png" alt="image-20231226164022346"></p><p>若出现异常执行再重新设置</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount -o rw,remount /</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">VMware虚拟机Ubuntu忘记密码解决</summary>
+    
+    
+    
+    <category term="其他" scheme="http://example.com/category/%E5%85%B6%E4%BB%96/"/>
+    
+    
+    <category term="问题解决" scheme="http://example.com/tag/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/"/>
     
   </entry>
   
