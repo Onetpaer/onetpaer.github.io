@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-siteapp">
     <title>
         
-            BypassUAC的多种方式
+            /image/article/BypassUAC的多种方式
         
     </title>
     <link rel="shortcut icon" href="#"/>
@@ -38,7 +38,7 @@
     <div class="vertical">
         <div class="inner">
             
-                <h1 class="header-subtitle">BypassUAC的多种方式</h1>
+                <h1 class="header-subtitle">/image/article/BypassUAC的多种方式</h1>
                 <div class="header-subinfo">
                     <p class="article-info-text">
                         <span>
@@ -46,7 +46,7 @@
                         </span>
                         
                             
-                                <span id="/posts/888328195.html" class="leancloud_visitors" data-flag-title="BypassUAC的多种方式">
+                                <span id="/posts/888328195.html" class="leancloud_visitors" data-flag-title="/image/article/BypassUAC的多种方式">
                                     <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
                                 </span>
                             
@@ -75,11 +75,11 @@
         <div id="article">
             <div class="toc"></div>
             <div class="article-body">
-                <h1 id="BypassUAC的多种方式"><a href="#BypassUAC的多种方式" class="headerlink" title="BypassUAC的多种方式"></a>BypassUAC的多种方式</h1><p>在上线遇到低权限用户进行提权时，可以利用系统漏洞，利用土豆系列工具提权到system，同时可以BypassUAC提权到管理员。</p>
+                <h1 id="image-article-BypassUAC的多种方式"><a href="#image-article-BypassUAC的多种方式" class="headerlink" title="&#x2F;image&#x2F;article&#x2F;BypassUAC的多种方式"></a>&#x2F;image&#x2F;article&#x2F;BypassUAC的多种方式</h1><p>在上线遇到低权限用户进行提权时，可以利用系统漏洞，利用土豆系列工具提权到system，同时可以BypassUAC提权到管理员。</p>
 <h2 id="什么是UAC"><a href="#什么是UAC" class="headerlink" title="什么是UAC"></a>什么是UAC</h2><p>UAC是微软在 Windows Vista 以后版本引入的一种安全机制，UAC全称是User Account Control直译为“用户帐户控制”，UAC需要用户在执行一些可能会影响计算机运行的操作或执行更改影响其他用户的设置的操作之前，提供权限或管理员‌密码。</p>
-<p><img src="/BypassUAC%E7%9A%84%E5%A4%9A%E7%A7%8D%E6%96%B9%E5%BC%8F.assets/uacflowchart.png" alt="img"></p>
+<p><img src="/image/article/BypassUAC%E7%9A%84%E5%A4%9A%E7%A7%8D%E6%96%B9%E5%BC%8F.assets/uacflowchart.png" alt="img"></p>
 <h2 id="什么是BypassUAC"><a href="#什么是BypassUAC" class="headerlink" title="什么是BypassUAC"></a>什么是BypassUAC</h2><p>在触发UAC时，操作系统会创建一个名为consent.exe的进程，该进程通过白名单和用户选择来确定是否提升权限。 请求进程将要提升权限的进程的commandline和程序路径通过LPC(Local Procedure Call)接口传递给appinfo的RAiluanchAdminProcess函数，该函数首先会验证传入程序是否在白名单内同时判断是否弹出UAC窗口，这个UAC框会创建新的安全桌面，屏蔽之前的界面。同时这个UAC框进程是SYSTEM权限进程，其他普通进程也无法和其进行通信交互。用户确认之后，会调用CreateProcessAsUser函数以管理员权限启动请求的进程。 通常通过UAC的权限提升需要由用户确认，在不被用户发现的情况下静默的将程序的普通权限提升为管理员权限，从而使程序可以实现一些需要权限的操作被称之为BypassUac。</p>
-<h2 id="BypassUAC的多种方式-1"><a href="#BypassUAC的多种方式-1" class="headerlink" title="BypassUAC的多种方式"></a>BypassUAC的多种方式</h2><p>看权限命令</p>
+<h2 id="image-article-BypassUAC的多种方式-1"><a href="#image-article-BypassUAC的多种方式-1" class="headerlink" title="&#x2F;image&#x2F;article&#x2F;BypassUAC的多种方式"></a>&#x2F;image&#x2F;article&#x2F;BypassUAC的多种方式</h2><p>看权限命令</p>
 <figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">whoami /priv</span><br></pre></td></tr></table></figure>
 
 <h3 id="白名单提权"><a href="#白名单提权" class="headerlink" title="白名单提权"></a>白名单提权</h3><p>有一些系统程序是会直接获取管理员权限同时不出发UAC弹窗的，这类程序被称为白名单程序。 这些程序拥有一个manifest文件该文件本质上是一个XML文件用于标识该程序的配置属性。 拥有autoElevate属性程序和微软签名和白名单会被操作系统认为是可信的。会在启动时就静默提升权限。</p>
@@ -90,7 +90,7 @@
 <p>如果程序设置如<code>&lt;autoElevate&gt;true&lt;/autoElevate&gt;</code>时，则是在白名单中</p>
 <figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sigcheck64.exe -m C:\Windows\System32\fodhelper.exe | <span class="built_in">findstr</span> auto</span><br></pre></td></tr></table></figure>
 
-<p><img src="/BypassUAC%E7%9A%84%E5%A4%9A%E7%A7%8D%E6%96%B9%E5%BC%8F.assets/image-20240222192648387.png" alt="image-20240222192648387"></p>
+<p><img src="/image/article/BypassUAC%E7%9A%84%E5%A4%9A%E7%A7%8D%E6%96%B9%E5%BC%8F.assets/image-20240222192648387.png" alt="image-20240222192648387"></p>
 <h4 id="DLL劫持"><a href="#DLL劫持" class="headerlink" title="DLL劫持"></a>DLL劫持</h4><p>找一个既在白名单又存在DLL劫持的程序</p>
 <p>写一个上线beacon的DLL进行劫持即可</p>
 <h4 id="注册表劫持"><a href="#注册表劫持" class="headerlink" title="注册表劫持"></a>注册表劫持</h4><p>有杀软的情况比较鸡肋360下百分百拦截，火绒WDF其他可以用</p>
@@ -124,7 +124,7 @@
     <div class="suffix-box-right">
         <span class="suffix-box-title">文章作者：</span>tpaer
         <br>
-        <span class="suffix-box-title">文章出处：</span><a href="/posts/888328195.html" target="_blank">BypassUAC的多种方式</a>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/888328195.html" target="_blank">/image/article/BypassUAC的多种方式</a>
         <br>
         <span class="suffix-box-title">作者签名：</span>nice or terrible.
         <br>

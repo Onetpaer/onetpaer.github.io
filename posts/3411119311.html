@@ -80,7 +80,7 @@
 <p>黑DLL需要优先正常DLL目录，并且DLL不在WIndows KnowDLLs列表中</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reg query &quot;HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\KnownDLLs&quot;</span><br></pre></td></tr></table></figure>
 
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221102021774.png" alt="image-20240221102021774"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221102021774.png" alt="image-20240221102021774"></p>
 <p>DLL劫持分为两种：</p>
 <p>1.劫持不存在的DLL</p>
 <p>2.劫持已存在的DLL</p>
@@ -94,50 +94,50 @@
 <p>利用Process Monitor工具 首先添加filter</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Process name uc.exe</span><br><span class="line">Result is NAME NOT FOUND</span><br><span class="line">Path ends with .dll</span><br></pre></td></tr></table></figure>
 
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113144776.png" alt="image-20240221113144776"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113144776.png" alt="image-20240221113144776"></p>
 <p>返回结果中找到iconv.dll</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113234544.png" alt="image-20240221113234544"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113234544.png" alt="image-20240221113234544"></p>
 <p>其stack调用了LoadLibrary函数</p>
 <blockquote>
 <p><code>LoadLibrary</code>和<code>LoadLibraryEx</code>一个是本地加载，一个是远程加载，如果DLL不在调用的同一目录下，就可以使用<code>LoadLibrary(L&quot;DLL绝对路径&quot;)</code>加载。但是如果DLL内部又调用一个DLL，就需要使用<code>LoadLibraryEx</code>进行远程加载</p>
 </blockquote>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113404722.png" alt="image-20240221113404722"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113404722.png" alt="image-20240221113404722"></p>
 <p>在iconv.dll同级目录下都是x64位的，所以替换的也是x64位dll</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113517102.png" alt="image-20240221113517102"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113517102.png" alt="image-20240221113517102"></p>
 <p>替换后启动uc.exe，成功弹出计算器</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113558921.png" alt="image-20240221113558921"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221113558921.png" alt="image-20240221113558921"></p>
 <h2 id="劫持已存在的DLL"><a href="#劫持已存在的DLL" class="headerlink" title="劫持已存在的DLL"></a>劫持已存在的DLL</h2><p>还是利用Process Monitor添加filter</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221150006453.png" alt="image-20240221150006453"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221150006453.png" alt="image-20240221150006453"></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Process name uc.exe</span><br><span class="line">Result is SUCCESS</span><br><span class="line">Path begins with D:\UltraCompare</span><br></pre></td></tr></table></figure>
 
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221145848438.png" alt="image-20240221145848438"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221145848438.png" alt="image-20240221145848438"></p>
 <p>这里可以采用DLL转发方式，可以利用工具AheadLib+，但是这个工具内联了__asm在VS2022x64下不支持，只能用来生成x86的dll</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221131153988.png" alt="image-20240221131153988"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221131153988.png" alt="image-20240221131153988"></p>
 <p>在github上找到了个好用的工具：</p>
 <p><a target="_blank" rel="noopener" href="https://github.com/strivexjun/AheadLib-x86-x64">https://github.com/strivexjun/AheadLib-x86-x64</a></p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151226028.png" alt="image-20240221151226028"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151226028.png" alt="image-20240221151226028"></p>
 <p>点击Makefile后生成2个文件</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151340085.png" alt="image-20240221151340085"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151340085.png" alt="image-20240221151340085"></p>
 <p>VS新建DLL项目导入这两个文件</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151425359.png" alt="image-20240221151425359"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151425359.png" alt="image-20240221151425359"></p>
 <p>.asm文件需要设置属性</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">把 .asm 文件添加到工程一次</span><br><span class="line">右键单击文件-属性-常规-</span><br><span class="line">项类型:自定义生成工具</span><br><span class="line">从生成中排除:否</span><br><span class="line"></span><br><span class="line">然后复制下面命令填入</span><br><span class="line">命令行: ml64 /Fo $(IntDir)%(fileName).obj /c /Cp %(fileName).asm</span><br><span class="line">输出: $(IntDir)%(fileName).obj;%(Outputs)</span><br><span class="line">链接对象: 是</span><br></pre></td></tr></table></figure>
 
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151535574.png" alt="image-20240221151535574"></p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151544478.png" alt="image-20240221151544478"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151535574.png" alt="image-20240221151535574"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151544478.png" alt="image-20240221151544478"></p>
 <p>之后运行库改MT，开始修改代码新增弹计算器的代码</p>
 <p>老哥在生成的代码里加了新建线程执行，避免了白加黑CS的死锁问题</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151928771.png" alt="image-20240221151928771"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221151928771.png" alt="image-20240221151928771"></p>
 <p>之后又改了转发文件的代码转发到同目录的zlib1Org.dll</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152026911.png" alt="image-20240221152026911"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152026911.png" alt="image-20240221152026911"></p>
 <p>因为找不到shlwapi.h文件一些API找不到标识符</p>
 <p>在framework.h中添加#include &lt;shlwapi.h&gt;</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152141898.png" alt="image-20240221152141898"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152141898.png" alt="image-20240221152141898"></p>
 <p>可以正常编译了，直接编译DLL</p>
 <p>将编译好的DLL改名zlib1.dll原来的DLL改名zlib1Org.dll</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152353758.png" alt="image-20240221152353758"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152353758.png" alt="image-20240221152353758"></p>
 <p>启动uc.exe 成功弹出计算器</p>
-<p><img src="/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152458563.png" alt="image-20240221152458563"></p>
+<p><img src="/image/article/%E6%8C%96%E6%8E%98%E7%99%BD%E5%8A%A0%E9%BB%91DLL%E5%8A%AB%E6%8C%81%E6%BC%8F%E6%B4%9E.assets/image-20240221152458563.png" alt="image-20240221152458563"></p>
 
                 
                 <p class="end">__END__</p>
