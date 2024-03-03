@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-siteapp">
     <title>
         
-            归档
+            关于宽字节注入%df的理解
         
     </title>
     <link rel="shortcut icon" href="#"/>
@@ -33,15 +33,36 @@
 </head>
 <body>
     <a id="cover"></a>
-    <link type="text/css" rel="stylesheet" href="/css/archive.css">
+    <link type="text/css" rel="stylesheet" href="/css/post.css">
 <div id="header" class="header">
     <div class="vertical">
         <div class="inner">
             
-                <h1 class="header-subtitle">归档</h1>
+                <h1 class="header-subtitle">关于宽字节注入%df的理解</h1>
                 <div class="header-subinfo">
-                    <p class="article-info-text Chinese"></p>
-                    <p class="article-info-text English"></p>                  
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2023-03-03
+                        </span>
+                        
+                            
+                                <span id="/posts/2171615130.html" class="leancloud_visitors" data-flag-title="关于宽字节注入%df的理解">
+                                    <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                                </span>
+                            
+                              
+                        
+                    </p>
+                    
+                        
+                            <span class="category-color">Web安全</span>
+                        
+                    
+                    
+                        
+                            <span class="tag-color">Web安全</span>
+                        
+                    
                 </div>
             
         </div>
@@ -50,65 +71,79 @@
 </div>
 <div id="container">
     
-        
-            <!-- 归档页面、分类归档页面、标签归档页面 -->
-            <div class="articles">
-                <div class="articles-wrap">
-                    <span class="archive-move-on"></span>
-                    <span class="archive-counter">
+        <!-- 文章页面 -->
+        <div id="article">
+            <div class="toc"></div>
+            <div class="article-body">
+                <p>宽字节注入是sql注入的一种手段，利用mysql使用GBK编码（因为GBK占用2个字节，而ascii占用1个字节），将两个字符看作一个汉字，从而消除转义字符\。（当某字符的大小为一个字节时，称其字符为窄字节当某字符的大小为两个字节时，称其字符为宽字节。所有英文默认占一个字节，汉字占两个字节。）</p>
+<p>以下是个人总结对%df的理解</p>
+<p><strong>为什么使用%df</strong></p>
+<p>不一定使用%df，但前一个字节ascii码要大于128才到汉字的范围。</p>
+<p><strong>为什么那么多人都用%df</strong></p>
+<p>and被php转义后就是%df</p>
+<p><strong>逃逸过程</strong></p>
+<p>php.ini中有一个get_magic_quotes_gpc功能，在开启时所有的 ‘ (单引号), “ (双引号), \ (反斜线) and 空字符会自动加上转义符\。</p>
+<p>以’单引号为例，如何使&#39;中的’逃逸出来：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?id=1%df&#x27; and 1=1--+</span><br></pre></td></tr></table></figure>
+
+
+<p>%df’&#x3D;&gt;%df&#39;（单引号会被加上转义字符\）</p>
+<p>%df&#39;&#x3D;&gt;%df%5c’（\的十六进制为%5c）</p>
+<p>%df%5c’&#x3D;&gt;縗’（GBK编码时会认为这时一个宽字节）</p>
+<p>‘成功逃逸，sql语法正确</p>
+<p>sqlmap中同时也存在宽字节绕过的脚本unmagicquotes.py，使用方式如下</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -u <span class="string">&quot;ip&quot;</span> --tamper=<span class="string">&quot;unmagicquotes.py&quot;</span> --batch</span><br></pre></td></tr></table></figure>
+
+
+
+                
+                <p class="end">__END__</p>
+            </div>
+            <div class="article-footer">
+                <div class="suffix-box">
+    <div class="suffix-box-left">
+        <img src="/image/sidebar/avatar.png" alt="tpaer">
+    </div>
+    <div class="suffix-box-right">
+        <span class="suffix-box-title">文章作者：</span>tpaer
+        <br>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/2171615130.html" target="_blank">关于宽字节注入%df的理解</a>
+        <br>
+        <span class="suffix-box-title">作者签名：</span>nice or terrible.
+        <br>
+        <span class="suffix-box-title">关于主题：</span><a href="" target="_blank"></a>
+        <br>
+        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+        <br>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+                
+                    <div class="category">
+                        分类：
                         
-                            目前共计 33 篇日志，继续加油！
+                            <a href="/category/Web%E5%AE%89%E5%85%A8/">Web安全</a>
                         
-                    </span>
-                    
-                    
+                    </div>
+                
+                
+                    <div class="tag">
+                        标签：
                         
-                            <div class="archive-title">
-                                <h2 class="archive-year">2023</h2>
-                            </div>
-                            
-                           
-                        <div class="article">
-                            <div class="article-header">
-                                <h1 class="article-title"><a href="/posts/1324925222.html"><span>RSA密钥生成和SSH自动登录远程服务器</span></a></h1>
-                                <div class="article-meta">
-                                    <span class="article-time">12-13</span>
-                                </div>
-                            </div>
-                        </div>
+                            <a href="/tag/Web%E5%AE%89%E5%85%A8/">Web安全</a>
+                        
+                    </div>
+                
+                <div class="article-prev-next">
                     
-                           
-                        <div class="article">
-                            <div class="article-header">
-                                <h1 class="article-title"><a href="/posts/2884547573.html"><span>验证码的识别与爆破</span></a></h1>
-                                <div class="article-meta">
-                                    <span class="article-time">12-11</span>
-                                </div>
-                            </div>
-                        </div>
+                        <a href="/posts/452430507.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/452430507.html" title="发布于 2023-11-24 03:10">vulnhub darkhole1 靶场通关</a>
+                        <br>
                     
-                           
-                        <div class="article">
-                            <div class="article-header">
-                                <h1 class="article-title"><a href="/posts/2657481293.html"><span>Chrome插件SwitchyOmega本地不代理解决</span></a></h1>
-                                <div class="article-meta">
-                                    <span class="article-time">12-11</span>
-                                </div>
-                            </div>
-                        </div>
                     
                 </div>
             </div>
-            
-        
-    <div class="pagination-bottom">
-        <div class="pagination">
-            
-                <a class="extend prev" rel="prev" href="/archive/2023/12/">上一页</a><a class="page-number" href="/archive/2023/12/">1</a><span class="page-number current">2</span>
-            
+             
         </div>
-    </div>
-
     
 </div>
     <div id="footer">
@@ -146,7 +181,7 @@
                     
                         <li class=""><a href="/tag" class="" target="_self"><span class="iconfont icon-discount-fill"></span>标签</a></li>
                     
-                        <li class=" active "><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
+                        <li class=""><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
                     
                         <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
                     
