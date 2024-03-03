@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-siteapp">
     <title>
         
-            结合CodeQL工具对FastJson漏洞的深入分析
+            Java动态加载字节码TemplatesImpl
         
     </title>
     <link rel="shortcut icon" href="#"/>
@@ -38,15 +38,15 @@
     <div class="vertical">
         <div class="inner">
             
-                <h1 class="header-subtitle">结合CodeQL工具对FastJson漏洞的深入分析</h1>
+                <h1 class="header-subtitle">Java动态加载字节码TemplatesImpl</h1>
                 <div class="header-subinfo">
                     <p class="article-info-text">
                         <span>
-                            <i class="iconfont icon-time"></i> 发表时间：2023-12-29
+                            <i class="iconfont icon-time"></i> 发表时间：2024-01-21
                         </span>
                         
                             
-                                <span id="/posts/14355416.html" class="leancloud_visitors" data-flag-title="结合CodeQL工具对FastJson漏洞的深入分析">
+                                <span id="/posts/1379073624.html" class="leancloud_visitors" data-flag-title="Java动态加载字节码TemplatesImpl">
                                     <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
                                 </span>
                             
@@ -75,7 +75,71 @@
         <div id="article">
             <div class="toc"></div>
             <div class="article-body">
+                <h1 id="Java动态加载字节码TemplatesImpl"><a href="#Java动态加载字节码TemplatesImpl" class="headerlink" title="Java动态加载字节码TemplatesImpl"></a>Java动态加载字节码TemplatesImpl</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Java字节码存储在.class文件在JVM虚拟机运行</p>
+<h2 id="TemplatesImpl加载字节码"><a href="#TemplatesImpl加载字节码" class="headerlink" title="TemplatesImpl加载字节码"></a>TemplatesImpl加载字节码</h2><p>Java文件经历ClassLoader#loadClass&#x3D;&gt;ClassLoader#findClass&#x3D;&gt;ClassLoader#defineClass</p>
+<p>defineClass这一步用来处理前面传入的字节码，并处理成Java类</p>
+<p>可用来直接加载字节码</p>
+<h3 id="defineClass加载字节码"><a href="#defineClass加载字节码" class="headerlink" title="defineClass加载字节码"></a>defineClass加载字节码</h3><p><img src="/Java%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E5%AD%97%E8%8A%82%E7%A0%81TemplateImpl%E5%92%8CBCEL.assets/image-20240121224237477.png" alt="image-20240121224237477"></p>
+<p>先准备一个.class文件</p>
+<p>写一个DefineClass.java文件</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DefineClass</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">DefineClass</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;New instance construct&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">test</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;test123&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译.java文件 生成DefineClass.class</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac DefineClass.java</span><br></pre></td></tr></table></figure>
+
+<p>将DefineClass.class文件进行base64加密</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yv66vgAAADQAHgoABwAPCQAQABEIABIKABMAFAgAFQcAFgcAFwEABjxpbml0PgEAAygpVgEABENvZGUBAA9MaW5lTnVtYmVyVGFibGUBAAR0ZXN0AQAKU291cmNlRmlsZQEAEERlZmluZUNsYXNzLmphdmEMAAgACQcAGAwAGQAaAQAWTmV3IGluc3RhbmNlIGNvbnN0cnVjdAcAGwwAHAAdAQAHdGVzdDEyMwEAC0RlZmluZUNsYXNzAQAQamF2YS9sYW5nL09iamVjdAEAEGphdmEvbGFuZy9TeXN0ZW0BAANvdXQBABVMamF2YS9pby9QcmludFN0cmVhbTsBABNqYXZhL2lvL1ByaW50U3RyZWFtAQAHcHJpbnRsbgEAFShMamF2YS9sYW5nL1N0cmluZzspVgAhAAYABwAAAAAAAgABAAgACQABAAoAAAAtAAIAAQAAAA0qtwABsgACEgO2AASxAAAAAQALAAAADgADAAAAAwAEAAQADAAFAAEADAAJAAEACgAAACUAAgABAAAACbIAAhIFtgAEsQAAAAEACwAAAAoAAgAAAAgACAAJAAEADQAAAAIADg==</span><br></pre></td></tr></table></figure>
+
+<p>直接使用defineClass加载字节码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestDefineClass</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Method</span> <span class="variable">defineClass</span> <span class="operator">=</span> ClassLoader.class.getDeclaredMethod(<span class="string">&quot;defineClass&quot;</span>, String.class, <span class="type">byte</span>[].class, <span class="type">int</span>.class, <span class="type">int</span>.class);</span><br><span class="line">        defineClass.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="type">byte</span>[] code = org.apache.commons.codec.binary.Base64.decodeBase64(<span class="string">&quot;yv66vgAAADQAHgoABwAPCQAQABEIABIKABMAFAgAFQcAFgcAFwEABjxpbml0PgEAAygpVgEABENvZGUBAA9MaW5lTnVtYmVyVGFibGUBAAR0ZXN0AQAKU291cmNlRmlsZQEAEERlZmluZUNsYXNzLmphdmEMAAgACQcAGAwAGQAaAQAWTmV3IGluc3RhbmNlIGNvbnN0cnVjdAcAGwwAHAAdAQAHdGVzdDEyMwEAC0RlZmluZUNsYXNzAQAQamF2YS9sYW5nL09iamVjdAEAEGphdmEvbGFuZy9TeXN0ZW0BAANvdXQBABVMamF2YS9pby9QcmludFN0cmVhbTsBABNqYXZhL2lvL1ByaW50U3RyZWFtAQAHcHJpbnRsbgEAFShMamF2YS9sYW5nL1N0cmluZzspVgAhAAYABwAAAAAAAgABAAgACQABAAoAAAAtAAIAAQAAAA0qtwABsgACEgO2AASxAAAAAQALAAAADgADAAAAAwAEAAQADAAFAAEADAAJAAEACgAAACUAAgABAAAACbIAAhIFtgAEsQAAAAEACwAAAAoAAgAAAAgACAAJAAEADQAAAAIADg==&quot;</span>);</span><br><span class="line">        System.out.println(ClassLoader.getSystemClassLoader());</span><br><span class="line">        <span class="type">Class</span> <span class="variable">hello</span> <span class="operator">=</span> (Class) defineClass.invoke(ClassLoader.getSystemClassLoader(), <span class="string">&quot;DefineClass&quot;</span>, code, <span class="number">0</span>, code.length);</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> hello.newInstance();</span><br><span class="line">        <span class="type">Method</span> <span class="variable">test</span> <span class="operator">=</span> hello.getMethod(<span class="string">&quot;test&quot;</span>);</span><br><span class="line">        test.invoke(o);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果如下</p>
+<p><img src="/Java%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E5%AD%97%E8%8A%82%E7%A0%81TemplateImpl%E5%92%8CBCEL.assets/image-20240121223814985.png" alt="image-20240121223814985"></p>
+<p>defineClass被调用类对象不会被初始化，需要调用构造函数才能执行代码</p>
+<h3 id="TemplatesImpl利用链"><a href="#TemplatesImpl利用链" class="headerlink" title="TemplatesImpl利用链"></a>TemplatesImpl利用链</h3><p>com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl中的内部类TransletClassLoader重写了defineClass</p>
+<p><img src="/Java%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E5%AD%97%E8%8A%82%E7%A0%81TemplateImpl%E5%92%8CBCEL.assets/image-20240121224817610.png" alt="image-20240121224817610"></p>
+<p>之前是protected修饰符现在是default 默认同包类可以访问</p>
+<p>TemplatesImpl的利用链</p>
+<p>TemplatesImpl#getOutputProperties&#x3D;&gt;TemplatesImpl#newTransformer&#x3D;&gt;TemplatesImpl#getTransletInstance&#x3D;&gt;emplatesImpl#defineTransletClasses&#x3D;&gt;TransletClassLoader#defineClass</p>
+<p>首先getOutputProperties调用了newTransformer</p>
+<p><img src="/Java%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E5%AD%97%E8%8A%82%E7%A0%81TemplateImpl%E5%92%8CBCEL.assets/image-20240123192559989.png" alt="image-20240123192559989"></p>
+<p>newTransormer调用getTransletInstance</p>
+<p><img src="/Java%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E5%AD%97%E8%8A%82%E7%A0%81TemplateImpl%E5%92%8CBCEL.assets/image-20240123195936384.png" alt="image-20240123195936384"></p>
+<p>getTransletInstance调用defineTransletClasses</p>
+<p><img src="/Java%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E5%AD%97%E8%8A%82%E7%A0%81TemplateImpl%E5%92%8CBCEL.assets/image-20240123200051209.png" alt="image-20240123200051209"></p>
+<p>最终defineTransletClasses调用defineClass</p>
+<p><img src="/Java%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E5%AD%97%E8%8A%82%E7%A0%81TemplateImpl%E5%92%8CBCEL.assets/image-20240123200255005.png" alt="image-20240123200255005"></p>
+<p>POC</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.xalan.xsltc.trax.TemplatesImpl;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> ysoserial.payloads.util.Reflections.setFieldValue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TemplatesImplClass</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">byte</span>[] code = org.apache.commons.codec.binary.Base64.decodeBase64(<span class="string">&quot;yv66vgAAADIAMwoABwAiCQAjACQIACUKACYAJwoAJgAoBwApBwAqAQAJdHJhbnNmb3JtAQBQKExvcmcvYXBhY2hlL3hhbGFuL3hzbHRjL0RPTTtbTG9yZy9hcGFjaGUveG1sL3NlcmlhbGl6ZXIvU2VyaWFsaXphdGlvbkhhbmRsZXI7KVYBAARDb2RlAQAPTGluZU51bWJlclRhYmxlAQASTG9jYWxWYXJpYWJsZVRhYmxlAQAEdGhpcwEAHEx0ZXN0L2xvYWRlci9UZW1wbGF0ZXNJbXBsWDsBAANkb20BABxMb3JnL2FwYWNoZS94YWxhbi94c2x0Yy9ET007AQAVc2VyaWFsaXphdGlvbkhhbmRsZXJzAQAxW0xvcmcvYXBhY2hlL3htbC9zZXJpYWxpemVyL1NlcmlhbGl6YXRpb25IYW5kbGVyOwEACkV4Y2VwdGlvbnMHACsBAHMoTG9yZy9hcGFjaGUveGFsYW4veHNsdGMvRE9NO0xvcmcvYXBhY2hlL3htbC9kdG0vRFRNQXhpc0l0ZXJhdG9yO0xvcmcvYXBhY2hlL3htbC9zZXJpYWxpemVyL1NlcmlhbGl6YXRpb25IYW5kbGVyOylWAQAPZHRtQXhpc0l0ZXJhdG9yAQAkTG9yZy9hcGFjaGUveG1sL2R0bS9EVE1BeGlzSXRlcmF0b3I7AQAUc2VyaWFsaXphdGlvbkhhbmRsZXIBADBMb3JnL2FwYWNoZS94bWwvc2VyaWFsaXplci9TZXJpYWxpemF0aW9uSGFuZGxlcjsBAAY8aW5pdD4BAAMoKVYBAARtYWluAQAWKFtMamF2YS9sYW5nL1N0cmluZzspVgEABGFyZ3MBABNbTGphdmEvbGFuZy9TdHJpbmc7AQAKU291cmNlRmlsZQEAE1RlbXBsYXRlc0ltcGxYLmphdmEMABoAGwcALAwALQAuAQATdGVtcGxhdGVYIGNvbnN0cnVjdAcALwwAMAAxDAAwADIBABp0ZXN0L2xvYWRlci9UZW1wbGF0ZXNJbXBsWAEAL29yZy9hcGFjaGUveGFsYW4veHNsdGMvcnVudGltZS9BYnN0cmFjdFRyYW5zbGV0AQAob3JnL2FwYWNoZS94YWxhbi94c2x0Yy9UcmFuc2xldEV4Y2VwdGlvbgEAEGphdmEvbGFuZy9TeXN0ZW0BAANvdXQBABVMamF2YS9pby9QcmludFN0cmVhbTsBABNqYXZhL2lvL1ByaW50U3RyZWFtAQAHcHJpbnRsbgEAFShMamF2YS9sYW5nL1N0cmluZzspVgEABChJKVYAIQAGAAcAAAAAAAQAAQAIAAkAAgAKAAAAPwAAAAMAAAABsQAAAAIACwAAAAYAAQAAAA0ADAAAACAAAwAAAAEADQAOAAAAAAABAA8AEAABAAAAAQARABIAAgATAAAABAABABQAAQAIABUAAgAKAAAASQAAAAQAAAABsQAAAAIACwAAAAYAAQAAABIADAAAACoABAAAAAEADQAOAAAAAAABAA8AEAABAAAAAQAWABcAAgAAAAEAGAAZAAMAEwAAAAQAAQAUAAEAGgAbAAEACgAAAD8AAgABAAAADSq3AAGyAAISA7YABLEAAAACAAsAAAAOAAMAAAAUAAQAFQAMABYADAAAAAwAAQAAAA0ADQAOAAAACQAcAB0AAQAKAAAAOAACAAEAAAAKsgACEQKatgAFsQAAAAIACwAAAAoAAgAAABkACQAaAAwAAAAMAAEAAAAKAB4AHwAAAAEAIAAAAAIAIQ==&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">TemplatesImpl</span> <span class="variable">tpi</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TemplatesImpl</span>();</span><br><span class="line">        setFieldValue(tpi, <span class="string">&quot;_bytecodes&quot;</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[][]&#123;code&#125;);</span><br><span class="line">        setFieldValue(tpi, <span class="string">&quot;_name&quot;</span>, <span class="string">&quot;TemplatesImpl&quot;</span>);</span><br><span class="line">        setFieldValue(tpi, <span class="string">&quot;_tfactory&quot;</span>, <span class="keyword">new</span> <span class="title class_">org</span>.apache.xalan.xsltc.trax.TransformerFactoryImpl());</span><br><span class="line"></span><br><span class="line">        tpi.newTransformer();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>.class文件必须继承自AbstractTranslet</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.xalan.xsltc.DOM;</span><br><span class="line"><span class="keyword">import</span> org.apache.xalan.xsltc.TransletException;</span><br><span class="line"><span class="keyword">import</span> org.apache.xalan.xsltc.runtime.AbstractTranslet;</span><br><span class="line"><span class="keyword">import</span> org.apache.xml.dtm.DTMAxisIterator;</span><br><span class="line"><span class="keyword">import</span> org.apache.xml.serializer.SerializationHandler;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TemplatesImplX</span> <span class="keyword">extends</span> <span class="title class_">AbstractTranslet</span> &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM dom, SerializationHandler[] serializationHandlers)</span> <span class="keyword">throws</span> TransletException &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM dom, DTMAxisIterator dtmAxisIterator, SerializationHandler serializationHandler)</span> <span class="keyword">throws</span> TransletException &#123;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">TemplatesImplX</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;templateX construct&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        System.out.println(<span class="number">666</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><img src="/Java%E5%8A%A8%E6%80%81%E5%8A%A0%E8%BD%BD%E5%AD%97%E8%8A%82%E7%A0%81TemplateImpl%E5%92%8CBCEL.assets/image-20240125200549193.png" alt="image-20240125200549193"></p>
+<h2 id="BCEL加载字节码"><a href="#BCEL加载字节码" class="headerlink" title="BCEL加载字节码"></a>BCEL加载字节码</h2><p>通过BCEL提供的两个类 Repository 和 Utility 来利用： </p>
+<p>Repository 用于将一个Java Class 先转换成原生字节码，当然这里也可以直接使用javac命令来编译java文件生成字节码</p>
+<p> Utility 用于将 原生的字节码转换成BCEL格式的字节码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> com.sun.org.apache.bcel.internal.classfile.JavaClass;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.bcel.internal.classfile.Utility;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.bcel.internal.Repository;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HelloBCEL</span> &#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String []args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">		<span class="type">JavaClass</span> <span class="variable">cls</span> <span class="operator">=</span> Repository.lookupClass(evil.Hello.class);</span><br><span class="line">		<span class="type">String</span> <span class="variable">code</span> <span class="operator">=</span> Utility.encode(cls.getBytes(), <span class="literal">true</span>);</span><br><span class="line">		System.out.println(code);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>BCEL ClassLoader加载字节码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">ClassLoader</span>().loadClass(code).newInstance();</span><br></pre></td></tr></table></figure>
+
+
                 
+                    <link type="text/css" rel="stylesheet" href="/css/donate.css">
+<div class="donate">
+    <i id="Github"></i>
+    <div id="DonateText">赞赏</div>
+    <ul id="DonateBox" class="list">
+        <li id="PayPal"></li>
+        <li id="AliPay">AliPay</li>
+		<li id="WeChat">WeChat</li>
+		<li id="Bitcoin">Bitcoin</li>
+    </ul>
+    <div id="QRBox">
+        <div id="MainBox"></div>
+    </div>
+</div>
                 
                 <p class="end">__END__</p>
             </div>
@@ -87,7 +151,7 @@
     <div class="suffix-box-right">
         <span class="suffix-box-title">文章作者：</span>tpaer
         <br>
-        <span class="suffix-box-title">文章出处：</span><a href="/posts/14355416.html" target="_blank">结合CodeQL工具对FastJson漏洞的深入分析</a>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/1379073624.html" target="_blank">Java动态加载字节码TemplatesImpl</a>
         <br>
         <span class="suffix-box-title">作者签名：</span>nice or terrible.
         <br>
@@ -116,11 +180,11 @@
                 
                 <div class="article-prev-next">
                     
-                        <a href="/posts/2714285355.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/2714285355.html" title="发布于 2024-01-04 09:56">Java利用链URLDNS分析</a>
+                        <a href="/posts/397717936.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/397717936.html" title="发布于 2024-01-24 11:54">VS2022中使用Cryptopp加密库</a>
                         <br>
                     
                     
-                        <a href="/posts/3065416875.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/3065416875.html" title="发布于 2023-12-28 07:16">FOFA&GitHub的常用搜索备忘录</a>
+                        <a href="/posts/3174531485.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/3174531485.html" title="发布于 2024-01-21 04:08">shellcode的传输与混淆</a>
                     
                 </div>
             </div>

