@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2024-03-03T15:38:23.738Z</updated>
+  <updated>2024-04-08T07:04:37.772Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,69 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>关于红队的IP隐藏技术</title>
+    <link href="http://example.com/posts/2635405924.html"/>
+    <id>http://example.com/posts/2635405924.html</id>
+    <published>2024-04-08T06:52:45.000Z</published>
+    <updated>2024-04-08T07:04:37.772Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="关于红队的IP隐藏技术"><a href="#关于红队的IP隐藏技术" class="headerlink" title="关于红队的IP隐藏技术"></a>关于红队的IP隐藏技术</h1><h2 id="WebRTC"><a href="#WebRTC" class="headerlink" title="WebRTC"></a>WebRTC</h2><p>WebRTC是一种网络实时通信(web real-time communications)，多用于视频通信对话。像一些浏览器比如Chrome采用了这个技术。在通信时如果我们开启代理或VPN，我们的http是tcp协议的会经过转发，但是WebRTC是通过sunt请求，是UDP协议的并没有经过转发导致泄露了真实IP。可以进行自测</p><p><a href="https://browserleaks.com/webrtc">https://browserleaks.com/webrtc</a></p><p>同时有一些手段进行绕过这个WebRTC：</p><p><strong>1.浏览器插件</strong></p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">https://chrome.google.com/webstore/detail/webrtc-leak-shield/bppamachkoflopbagkdoflbgfjflfnfl  </span><br><span class="line"></span><br><span class="line">https://microsoftedge.microsoft.com/addons/detail/pblfgfehcokbglafpcldgjpmknildihk  </span><br><span class="line"></span><br><span class="line">https://addons.mozilla.org/en-US/firefox/addon/webrtc-leak-shield/</span><br></pre></td></tr></table></figure><p><strong>2.浏览器配置</strong></p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">chrome://flags/#enable-webrtc-hide-local-ips-with-mdns  </span><br><span class="line">opera://flags/#enable-webrtc-hide-local-ips-with-mdns  </span><br><span class="line">edge://flags/#enable-webrtc-hide-local-ips-with-mdns</span><br><span class="line"></span><br><span class="line">about:config  </span><br><span class="line">media.peerconnection.enabled</span><br></pre></td></tr></table></figure><h2 id="代理池"><a href="#代理池" class="headerlink" title="代理池"></a>代理池</h2><p>快速更换IP，直到代理池中的IP被ban完</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/jhao104/proxy_pool </span><br><span class="line">https://github.com/Anyyy111/ProxyPoolxSocks </span><br></pre></td></tr></table></figure><h2 id="云函数"><a href="#云函数" class="headerlink" title="云函数"></a>云函数</h2><p>云函数不需要VPS，云函数在调用时创建，执行完销毁，利用云厂商云函数多出口特性，将HTTP请求进行转发，相当于拥有了代理池</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/shimmeris/SCFProxy/blob/main/README_zh.md </span><br></pre></td></tr></table></figure><h2 id="随身WIFI"><a href="#随身WIFI" class="headerlink" title="随身WIFI"></a>随身WIFI</h2><p>使用手机热点或者随身WIFI</p><p>手机热点：IP由基站随机分配，会被溯源到具体位置</p><p>随身WIFI：流量卡IP定位不同城市</p>]]></content>
+    
+    
+    <summary type="html">关于红队的IP隐藏技术</summary>
+    
+    
+    
+    <category term="web" scheme="http://example.com/category/web/"/>
+    
+    
+    <category term="网络安全" scheme="http://example.com/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>WIFI下的近源渗透</title>
+    <link href="http://example.com/posts/1310086788.html"/>
+    <id>http://example.com/posts/1310086788.html</id>
+    <published>2024-03-18T13:31:17.000Z</published>
+    <updated>2024-03-18T15:00:01.059Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="WIFI下的近源渗透"><a href="#WIFI下的近源渗透" class="headerlink" title="WIFI下的近源渗透"></a>WIFI下的近源渗透</h1><h2 id="ARP攻击"><a href="#ARP攻击" class="headerlink" title="ARP攻击"></a>ARP攻击</h2><h3 id="ARP"><a href="#ARP" class="headerlink" title="ARP"></a>ARP</h3><p>ARP协议规定,每台计算机都需要一个ARP表,用来保存IP地址和MAC地址的映射关系 。访问IP地址的时候就去查ARP表,从而找到对应的MAC地址。</p><p>如果ARP表中匹配不到,就会使用广播的方式发送一个ARP请求 ，目标主机收到请求后会使用单播的方式返回一个ARP响应,告知自己的MAC地址 。</p><p>拿到MAC地址后,会将映射关系缓存到ARP表,而后传递到数据链路层进行解析转换。</p><h3 id="arpspoof"><a href="#arpspoof" class="headerlink" title="arpspoof"></a>arpspoof</h3><p>arpspoof是一个好用的ARP欺骗工具，攻击者通过毒化受害者ARP缓存，将网关MAC替换为攻击者MAC，然后攻击者可截获受害者发送和收到的数据包，从而获取受害者账户、密码等相关敏感信息。Kali linux中自带了该工具</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">arpspoof [-i interface] [-c own|host|both] [-t target] [-r] host</span><br><span class="line">-i：指定网卡</span><br><span class="line">-c:攻击机的IP</span><br><span class="line">-t 目标机器的IP</span><br><span class="line">-r：网关IP</span><br></pre></td></tr></table></figure><h4 id="断网攻击"><a href="#断网攻击" class="headerlink" title="断网攻击"></a>断网攻击</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">arpspoof -i eth0 -r 192.168.0.1 -t 192.168.0.121</span><br><span class="line">-i:指定网卡</span><br><span class="line">-r:指定网关ip</span><br><span class="line">-t:指定靶机ip</span><br></pre></td></tr></table></figure><h4 id="流量劫持"><a href="#流量劫持" class="headerlink" title="流量劫持"></a>流量劫持</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1.查看当前是否开启了端口转发</span><br><span class="line">cat /proc/sys/net/ipv4/ip_forward </span><br><span class="line"></span><br><span class="line">2.开启通信转发的命令</span><br><span class="line">echo 1 &gt;&gt; /proc/sys/net/ipv4/ip_forward</span><br><span class="line"></span><br><span class="line">3.使用arpspoof发起ARP攻击</span><br><span class="line">arpspoof -i eth0 -r 192.168.110.1 -t 192.168.110.11</span><br></pre></td></tr></table></figure><p>配合wireshark流量过滤</p><p>配合urlsnarf进行流量分析</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">urlsnarf -i eth0</span><br></pre></td></tr></table></figure><p>driftnet图片窃取</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">driftnet -i eth0 -a -d /root/pcixxx</span><br></pre></td></tr></table></figure><p>配合ettercap监听密码 监听eth0网卡流量</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ettercap -Tq -i eth0</span><br></pre></td></tr></table></figure><p>配合tc网络限速</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">1.限制网速200ms延时</span><br><span class="line">tc qdisc add dev eth0 root netem delay 200ms</span><br><span class="line"></span><br><span class="line">2.取消限制网速200ms延时</span><br><span class="line">tc qdisc del dev eth0 root netem delay 200ms</span><br><span class="line"></span><br><span class="line">3.修改网络延时</span><br><span class="line">tc qdisc change  dev eth0 root netem delay 300ms</span><br><span class="line"></span><br><span class="line">查看限速规则</span><br><span class="line">tc qdisc show</span><br><span class="line"></span><br><span class="line">查看靶机当前的网速</span><br><span class="line">https://www.speedtest.cn/</span><br></pre></td></tr></table></figure><h3 id="ettercap"><a href="#ettercap" class="headerlink" title="ettercap"></a>ettercap</h3><p>启动ettercap GUI</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ettercap -G</span><br></pre></td></tr></table></figure><p>扫描</p><p><img src="/WIFI%E4%B8%8B%E7%9A%84%E8%BF%91%E6%BA%90%E6%B8%97%E9%80%8F.assets/%E5%BC%80%E5%90%AF%E6%89%AB%E6%8F%8F.png" alt="开启扫描"></p><p>查看主机列表</p><p><img src="/WIFI%E4%B8%8B%E7%9A%84%E8%BF%91%E6%BA%90%E6%B8%97%E9%80%8F.assets/%E6%9F%A5%E7%9C%8B%E4%B8%BB%E6%9C%BA%E5%88%97%E8%A1%A8.png" alt="查看主机列表"></p><p>网关add target1</p><p><img src="/WIFI%E4%B8%8B%E7%9A%84%E8%BF%91%E6%BA%90%E6%B8%97%E9%80%8F.assets/%E5%B0%86%E7%BD%91%E5%85%B3%E5%8A%A0%E5%85%A5%E7%9B%AE%E6%A0%871.png" alt="将网关加入目标1"></p><p>目标机器 add target2</p><p><img src="/WIFI%E4%B8%8B%E7%9A%84%E8%BF%91%E6%BA%90%E6%B8%97%E9%80%8F.assets/%E5%B0%86%E9%9D%B6%E6%9C%BA%E5%8A%A0%E5%85%A5%E5%88%B0%E7%9B%AE%E6%A0%872.png" alt="将靶机加入到目标2"></p><p>选择arp攻击</p><p><img src="/WIFI%E4%B8%8B%E7%9A%84%E8%BF%91%E6%BA%90%E6%B8%97%E9%80%8F.assets/%E9%80%89%E6%8B%A9ARP%E6%94%BB%E5%87%BB.png" alt="选择ARP攻击"></p><p>发起攻击</p><p><img src="/WIFI%E4%B8%8B%E7%9A%84%E8%BF%91%E6%BA%90%E6%B8%97%E9%80%8F.assets/%E7%82%B9%E5%87%BBok%E5%8F%91%E8%B5%B7%E6%94%BB%E5%87%BB.png" alt="点击ok发起攻击"></p><p>refer：</p><p><a href="https://www.wangan.com/p/7fy7fg41f40d565f">https://www.wangan.com/p/7fy7fg41f40d565f</a></p><p><a href="https://blog.seanzou.com/archives/-wang-an--fu-xian-wifi-shen-tou--jin-yuan-shen-tou-">https://blog.seanzou.com/archives/-wang-an--fu-xian-wifi-shen-tou--jin-yuan-shen-tou-</a></p><p><a href="https://wooyun.js.org/drops/WIFI%E6%B8%97%E9%80%8F%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A.html">https://wooyun.js.org/drops/WIFI%E6%B8%97%E9%80%8F%E4%BB%8E%E5%85%A5%E9%97%A8%E5%88%B0%E7%B2%BE%E9%80%9A.html</a></p><p><a href="https://www.freebuf.com/articles/wireless/283395.html">https://www.freebuf.com/articles/wireless/283395.html</a></p><p><a href="https://9bie.org/index.php/archives/869/">https://9bie.org/index.php/archives/869/</a></p><p><a href="https://tttang.com/archive/1888/">https://tttang.com/archive/1888/</a></p>]]></content>
+    
+    
+    <summary type="html">WIFI下的近源渗透</summary>
+    
+    
+    
+    <category term="web" scheme="http://example.com/category/web/"/>
+    
+    
+    <category term="网络安全" scheme="http://example.com/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>内网穿透FRP工具的使用</title>
+    <link href="http://example.com/posts/1841941211.html"/>
+    <id>http://example.com/posts/1841941211.html</id>
+    <published>2024-03-06T11:51:32.000Z</published>
+    <updated>2024-03-06T11:59:57.056Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="内网穿透FRP工具的使用"><a href="#内网穿透FRP工具的使用" class="headerlink" title="内网穿透FRP工具的使用"></a>内网穿透FRP工具的使用</h1><p><a href="https://github.com/fatedier/frp">https://github.com/fatedier/frp</a></p><p><a href="https://gofrp.org/zh-cn/docs/overview/">https://gofrp.org/zh-cn/docs/overview/</a></p><h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><p>Linux server example：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#Linux后台启动</span><br><span class="line">nohup ./frps -c ./frps.toml&amp;</span><br><span class="line"></span><br><span class="line">#查看当前进程</span><br><span class="line">ps aux</span><br><span class="line"></span><br><span class="line">#关闭</span><br><span class="line">kill -9 PID</span><br></pre></td></tr></table></figure><p>windows client example：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#windows后台启动</span><br><span class="line">start /b frpc.exe -c frpc.toml</span><br><span class="line"></span><br><span class="line">#查看当前进程</span><br><span class="line">tasklist</span><br><span class="line"></span><br><span class="line">#结束进程</span><br><span class="line">taskkill /pid PID -f</span><br></pre></td></tr></table></figure><p>端口被占用：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">netstat -nap</span><br><span class="line">kill -9 PID</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">内网穿透FRP工具的使用</summary>
+    
+    
+    
+    <category term="web" scheme="http://example.com/category/web/"/>
+    
+    
+    <category term="网络安全" scheme="http://example.com/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/"/>
+    
+  </entry>
   
   <entry>
     <title>BypassUAC的多种方式</title>
@@ -370,69 +433,6 @@
     
     
     <category term="Java代码审计" scheme="http://example.com/tag/Java%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>FOFA&amp;GitHub的常用搜索备忘录</title>
-    <link href="http://example.com/posts/3065416875.html"/>
-    <id>http://example.com/posts/3065416875.html</id>
-    <published>2023-12-28T11:16:48.000Z</published>
-    <updated>2024-03-03T14:43:30.994Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="FOFA搜索技巧"><a href="#FOFA搜索技巧" class="headerlink" title="FOFA搜索技巧"></a>FOFA搜索技巧</h1><h2 id="body"><a href="#body" class="headerlink" title="body"></a>body</h2><p>搜索html正文中含有”管理后台”关键词的网站和IP</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">body=&quot;OA系统&quot;</span><br></pre></td></tr></table></figure><h2 id="after"><a href="#after" class="headerlink" title="after"></a>after</h2><p>在2023年12月28日后的发现网站(用于发现新网站)</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">after=&quot;2023-12-28&quot;</span><br></pre></td></tr></table></figure><h2 id="country"><a href="#country" class="headerlink" title="country"></a>country</h2><p>搜索目标的资产，(不)包含某个国家</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">country!=&quot;CN&quot; </span><br></pre></td></tr></table></figure><h2 id="domain"><a href="#domain" class="headerlink" title="domain"></a>domain</h2><p>搜索根域名中带有”scut.edu.cn”的网站</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">domain=&quot;scut.edu.cn&quot;</span><br></pre></td></tr></table></figure><h2 id="host"><a href="#host" class="headerlink" title="host"></a>host</h2><p>搜索域名中带有”krkr”关键词的网站</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">host=&quot;krkr&quot;</span><br></pre></td></tr></table></figure><h2 id="ip"><a href="#ip" class="headerlink" title="ip"></a>ip</h2><p>搜索指定ip或者ip段</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ip=&quot;121.4.165.70&quot;</span><br><span class="line">ip=&quot;121.4.165.1/24&quot;</span><br></pre></td></tr></table></figure><h2 id="WEB框架搜索"><a href="#WEB框架搜索" class="headerlink" title="WEB框架搜索"></a>WEB框架搜索</h2><h3 id="ThinkPHP框架"><a href="#ThinkPHP框架" class="headerlink" title="ThinkPHP框架"></a>ThinkPHP框架</h3><blockquote><p><strong>引用: <a href="https://www.cnblogs.com/sunny11/p/14388508.html">https://www.cnblogs.com/sunny11/p/14388508.html</a></strong> </p></blockquote><p>搜索WEB框架为ThinkPHP并且地区不为CN的</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">header=&quot;thinkphp&quot; &amp;&amp; country!=&quot;CN&quot;</span><br></pre></td></tr></table></figure><p>搜索WEB框架为ThinkPHP并且地区不为CN且包含后台管理的</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">header=&quot;thinkphp&quot; &amp;&amp; country!=&quot;CN&quot; &amp;&amp; title=&quot;后台管理&quot;</span><br></pre></td></tr></table></figure><p>搜索WEB框架为ThinkPHP并且地区不为CN且包含后台管理的，在某个时间段发现的</p><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">header</span>=&quot;thinkphp&quot; &amp;&amp; country!=&quot;CN&quot; &amp;&amp; title=&quot;后台管理&quot; &amp;&amp; after=&quot;<span class="number">2023</span>-<span class="number">06</span>-<span class="number">01</span>&quot;</span><br></pre></td></tr></table></figure><h3 id="Shiro框架"><a href="#Shiro框架" class="headerlink" title="Shiro框架"></a>Shiro框架</h3><p>FOFA搜索规则</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app=&quot;Apache-Shiro&quot; || header=&quot;rememberme=deleteMe&quot; || header=&quot;shiroCookie&quot;</span><br></pre></td></tr></table></figure><h3 id="Struts2框架"><a href="#Struts2框架" class="headerlink" title="Struts2框架"></a>Struts2框架</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app=&quot;Struts2&quot;</span><br></pre></td></tr></table></figure><h3 id="Spring框架"><a href="#Spring框架" class="headerlink" title="Spring框架"></a>Spring框架</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">icon_hash=&quot;116323821&quot; || body=&quot;Whitelabel Error Page&quot;</span><br></pre></td></tr></table></figure><h3 id="Weblogic"><a href="#Weblogic" class="headerlink" title="Weblogic"></a>Weblogic</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app=&quot;BEA-WebLogic-Server&quot; ||  app=&quot;Weblogic_interface_7001&quot;</span><br></pre></td></tr></table></figure><h2 id="WEB应用搜索"><a href="#WEB应用搜索" class="headerlink" title="WEB应用搜索"></a>WEB应用搜索</h2><h3 id="若依"><a href="#若依" class="headerlink" title="若依"></a>若依</h3><p>FOFA规则：通过标题或者icon进行搜索</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">title=&quot;若依&quot;</span><br><span class="line">icon_hash=&quot;706913071&quot;</span><br><span class="line">icon_hash=&quot;706913071&quot; || title=&quot;若依&quot;</span><br></pre></td></tr></table></figure><h3 id="Nacos"><a href="#Nacos" class="headerlink" title="Nacos"></a>Nacos</h3><p>FOFA规则</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app=&quot;nacos&quot;</span><br></pre></td></tr></table></figure><h3 id="通达OA"><a href="#通达OA" class="headerlink" title="通达OA"></a>通达OA</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app=&quot;TongDa-OA&quot;</span><br></pre></td></tr></table></figure><h3 id="Openfire"><a href="#Openfire" class="headerlink" title="Openfire"></a>Openfire</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">icon_hash=&quot;1211608009&quot; &amp;&amp; port=&quot;9090&quot;</span><br></pre></td></tr></table></figure><h3 id="PbootCMS"><a href="#PbootCMS" class="headerlink" title="PbootCMS"></a>PbootCMS</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">banner=&quot;Set-Cookie: pbootsystem=&quot; || header=&quot;Set-Cookie: pbootsystem=&quot; || title=&quot;PbootCMS&quot;</span><br></pre></td></tr></table></figure><h3 id="nginxWebUI"><a href="#nginxWebUI" class="headerlink" title="nginxWebUI"></a>nginxWebUI</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">app=&quot;nginxWebUI&quot;</span><br></pre></td></tr></table></figure><h2 id="关键类型站点搜索"><a href="#关键类型站点搜索" class="headerlink" title="关键类型站点搜索"></a>关键类型站点搜索</h2><h3 id="棋牌类"><a href="#棋牌类" class="headerlink" title="棋牌类"></a>棋牌类</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">title=&quot;后台&quot; &amp;&amp; body=&quot;棋牌&quot;</span><br></pre></td></tr></table></figure><h2 id="FOFA搜证书序列号"><a href="#FOFA搜证书序列号" class="headerlink" title="FOFA搜证书序列号"></a>FOFA搜证书序列号</h2><p><strong>（1）更多信息</strong></p><p><img src="/image/article/FOFA%E7%9A%84%E5%B8%B8%E7%94%A8%E6%90%9C%E7%B4%A2%E5%A4%87%E5%BF%98%E5%BD%95.assets/image-20230611175931388.png" alt="image-20230611175931388"></p><p><strong>（2）查看证书</strong></p><p><img src="/image/article/FOFA%E7%9A%84%E5%B8%B8%E7%94%A8%E6%90%9C%E7%B4%A2%E5%A4%87%E5%BF%98%E5%BD%95.assets/image-20230611180110256.png" alt="image-20230611180110256"></p><p><strong>（3）证书序列号</strong></p><p><img src="/image/article/FOFA%E7%9A%84%E5%B8%B8%E7%94%A8%E6%90%9C%E7%B4%A2%E5%A4%87%E5%BF%98%E5%BD%95.assets/image-20230611180253034.png" alt="image-20230611180253034"></p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">584BB45B43A5552A7FCD8F30</span><br></pre></td></tr></table></figure><p><strong>(4)16进制转10进制</strong></p><p><a href="https://tool.lu/hexconvert">https://tool.lu/hexconvert</a></p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">27326202010244486292310953776</span><br></pre></td></tr></table></figure><p><img src="/image/article/FOFA%E7%9A%84%E5%B8%B8%E7%94%A8%E6%90%9C%E7%B4%A2%E5%A4%87%E5%BF%98%E5%BD%95.assets/image-20230611180609142.png" alt="image-20230611180609142"></p><p><strong>（5）FOFA搜</strong></p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cert=27326202010244486292310953776</span><br></pre></td></tr></table></figure><p><img src="/image/article/FOFA%E7%9A%84%E5%B8%B8%E7%94%A8%E6%90%9C%E7%B4%A2%E5%A4%87%E5%BF%98%E5%BD%95.assets/image-20230611180704109.png" alt="image-20230611180704109"></p><h1 id="Github搜索技巧"><a href="#Github搜索技巧" class="headerlink" title="Github搜索技巧"></a>Github搜索技巧</h1><p>kali in:file 搜索文件中包含kali的代码 </p><p>kali in:path 搜索路径中包含kali的代码</p><p>kali in:path,file 搜索路径、文件中包含kali的代码 </p><p>shodan language:python 搜索关键字shodan，语言为python的代码 </p><p>filename:config.php language:php 搜索文件名为config.php，且语言为php </p><p>kali topics:&gt;&#x3D;5 标签数量大于等于5的 </p><p>kali size:&lt;1000 文件小于1KB的</p><p>kali stars:10..50 star大于10小于50的 </p><p>kali pushed:&gt;2021-08-15 搜索在2021年8月15日之后提交的 </p><p>kali pushed:2021-07-01..2021-08-01 搜索在此区间 </p><p>kali created:&gt;&#x3D;2021-06-01 创建时间 </p><p>kali pushed:&lt;2021-08-01 -language:java 搜索在2020年8月1日前push代码且排除java语言 </p>]]></content>
-    
-    
-    <summary type="html">FOFA的常用搜索备忘录</summary>
-    
-    
-    
-    <category term="Web安全" scheme="http://example.com/category/Web%E5%AE%89%E5%85%A8/"/>
-    
-    
-    <category term="工具使用" scheme="http://example.com/tag/%E5%B7%A5%E5%85%B7%E4%BD%BF%E7%94%A8/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>域内问题解决总结</title>
-    <link href="http://example.com/posts/2591890206.html"/>
-    <id>http://example.com/posts/2591890206.html</id>
-    <published>2023-12-27T06:39:42.000Z</published>
-    <updated>2024-03-03T14:41:46.127Z</updated>
-    
-    <content type="html"><![CDATA[<h1 id="工作站和主域间的信任关系失败"><a href="#工作站和主域间的信任关系失败" class="headerlink" title="工作站和主域间的信任关系失败"></a>工作站和主域间的信任关系失败</h1><p>CMD打开powershell</p><figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Test-ComputerSecureChannel</span> <span class="literal">-Credential</span> hack\Administrator <span class="literal">-Repair</span></span><br></pre></td></tr></table></figure><p>输入用户名密码</p><p>结果为True成功</p>]]></content>
-    
-    
-    <summary type="html">域内问题解决总结</summary>
-    
-    
-    
-    <category term="内网安全" scheme="http://example.com/category/%E5%86%85%E7%BD%91%E5%AE%89%E5%85%A8/"/>
-    
-    
-    <category term="内网安全" scheme="http://example.com/tag/%E5%86%85%E7%BD%91%E5%AE%89%E5%85%A8/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>VMware虚拟机Ubuntu忘记密码解决</title>
-    <link href="http://example.com/posts/2034176186.html"/>
-    <id>http://example.com/posts/2034176186.html</id>
-    <published>2023-12-26T08:27:00.000Z</published>
-    <updated>2024-03-03T14:44:04.683Z</updated>
-    
-    <content type="html"><![CDATA[<h3 id="1-重启虚拟机长按shift"><a href="#1-重启虚拟机长按shift" class="headerlink" title="1.重启虚拟机长按shift"></a>1.重启虚拟机长按shift</h3><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226162851841.png" alt="image-20231226162851841"></p><h3 id="2-按e进入如下页面，找到ro后面修改为"><a href="#2-按e进入如下页面，找到ro后面修改为" class="headerlink" title="2.按e进入如下页面，找到ro后面修改为"></a>2.按e进入如下页面，找到ro后面修改为</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">quiet splash rw init=/bin/bash</span><br></pre></td></tr></table></figure><p>修改前：</p><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226163728987.png" alt="image-20231226163728987"></p><p>修改后</p><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226163807102.png" alt="image-20231226163807102"></p><h3 id="3-按Ctrl-X或F10"><a href="#3-按Ctrl-X或F10" class="headerlink" title="3.按Ctrl+X或F10"></a>3.按Ctrl+X或F10</h3><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226163917410.png" alt="image-20231226163917410"></p><h3 id="4-修改密码，输入两次新密码"><a href="#4-修改密码，输入两次新密码" class="headerlink" title="4.修改密码，输入两次新密码"></a>4.修改密码，输入两次新密码</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">passwd 用户名</span><br></pre></td></tr></table></figure><p><img src="/image/article/VMware%E8%99%9A%E6%8B%9F%E6%9C%BAUbuntu%E5%BF%98%E8%AE%B0%E5%AF%86%E7%A0%81%E8%A7%A3%E5%86%B3.assets/image-20231226164022346.png" alt="image-20231226164022346"></p><p>若出现异常执行再重新设置</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount -o rw,remount /</span><br></pre></td></tr></table></figure>]]></content>
-    
-    
-    <summary type="html">VMware虚拟机Ubuntu忘记密码解决</summary>
-    
-    
-    
-    <category term="其他" scheme="http://example.com/category/%E5%85%B6%E4%BB%96/"/>
-    
-    
-    <category term="问题解决" scheme="http://example.com/tag/%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/"/>
     
   </entry>
   
