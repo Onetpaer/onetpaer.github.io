@@ -9,7 +9,7 @@
     <meta http-equiv="Cache-Control" content="no-siteapp">
     <title>
         
-            shellcode的传输与混淆
+            代码审计PHPStorm断点调试
         
     </title>
     <link rel="shortcut icon" href="#"/>
@@ -38,15 +38,15 @@
     <div class="vertical">
         <div class="inner">
             
-                <h1 class="header-subtitle">shellcode的传输与混淆</h1>
+                <h1 class="header-subtitle">代码审计PHPStorm断点调试</h1>
                 <div class="header-subinfo">
                     <p class="article-info-text">
                         <span>
-                            <i class="iconfont icon-time"></i> 发表时间：2024-01-21
+                            <i class="iconfont icon-time"></i> 发表时间：2024-06-13
                         </span>
                         
                             
-                                <span id="/posts/3174531485.html" class="leancloud_visitors" data-flag-title="shellcode的传输与混淆">
+                                <span id="/posts/2274820670.html" class="leancloud_visitors" data-flag-title="代码审计PHPStorm断点调试">
                                     <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
                                 </span>
                             
@@ -75,7 +75,33 @@
         <div id="article">
             <div class="toc"></div>
             <div class="article-body">
-                <h1 id="shellcode的传输与混淆"><a href="#shellcode的传输与混淆" class="headerlink" title="shellcode的传输与混淆"></a>shellcode的传输与混淆</h1><h2 id="shellcode混淆"><a href="#shellcode混淆" class="headerlink" title="shellcode混淆"></a>shellcode混淆</h2>
+                <h1 id="代码审计PHPStorm断点调试"><a href="#代码审计PHPStorm断点调试" class="headerlink" title="代码审计PHPStorm断点调试"></a>代码审计PHPStorm断点调试</h1><h2 id="PHPStorm的调试环境"><a href="#PHPStorm的调试环境" class="headerlink" title="PHPStorm的调试环境"></a>PHPStorm的调试环境</h2><h3 id="浏览器插件Xdebug-helper"><a href="#浏览器插件Xdebug-helper" class="headerlink" title="浏览器插件Xdebug helper"></a>浏览器插件Xdebug helper</h3><p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613145655346.png" alt="image-20240613145655346"></p>
+<h3 id="PhpStudy设置"><a href="#PhpStudy设置" class="headerlink" title="PhpStudy设置"></a>PhpStudy设置</h3><p>设置网站 设置PHP版本7.3</p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613150502472.png" alt="image-20240613150502472"></p>
+<p>设置PHP拓展XDebug</p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613150634486.png" alt="image-20240613150634486"></p>
+<p>在php.ini结尾新增</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">xdebug.profiler_append = 0</span><br><span class="line">;效能检测的设置开关</span><br><span class="line">xdebug.profiler_enable = 1</span><br><span class="line">xdebug.profiler_enable_trigger = 0</span><br><span class="line">;profiler_enable 设置为1的时候，效能监测信息写入文件所在的目录，可以自定义</span><br><span class="line">xdebug.profiler_output_dir = &quot;E:\phpStudy_64\tmp\xdebug&quot;</span><br><span class="line">;设置的函数调用监测信息的输出路径,可以自定义</span><br><span class="line">xdebug.trace_output_dir = &quot;E:\phpStudy_64\tmp\xdebug&quot;</span><br><span class="line">;生成的效能监测文件的名称</span><br><span class="line">xdebug.profiler_output_name = &quot;cache.out.%t-%s&quot;</span><br><span class="line">;远程开启 1 表示默认远程开启 0 表示关闭</span><br><span class="line">xdebug.remote_enable = 1</span><br><span class="line">xdebug.remote_handler = dbgp</span><br><span class="line">;远程主机地址 这里设置的是我们本地解析的域名</span><br><span class="line">xdebug.remote_host = www.diguo.com</span><br><span class="line">;远程自动启动 1 表示开始  0 表示关闭</span><br><span class="line">xdebug.remote_autostart = 1</span><br><span class="line">;远程端口 可自己定义</span><br><span class="line">xdebug.remote_port = 9100</span><br><span class="line">xdebug.idekey = PHPSTORM</span><br></pre></td></tr></table></figure>
+
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613151325053.png" alt="image-20240613151325053"></p>
+<p>查看phpinfo</p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613151715903.png" alt="image-20240613151715903"></p>
+<h3 id="PHPStorm设置"><a href="#PHPStorm设置" class="headerlink" title="PHPStorm设置"></a>PHPStorm设置</h3><p>php版本对应</p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613152319328.png" alt="image-20240613152319328"></p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613152259501.png" alt="image-20240613152259501"></p>
+<p>xdebug配置，对应php.ini phpinfo配置</p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613152455554.png" alt="image-20240613152455554"></p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613152554162.png" alt="image-20240613152554162"></p>
+<h3 id="运行调试测试"><a href="#运行调试测试" class="headerlink" title="运行调试测试"></a>运行调试测试</h3><p>新建PHP HTTP Request调试</p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613152846547.png" alt="image-20240613152846547"></p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613153128820.png" alt="image-20240613153128820"></p>
+<p>server配置</p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613153107248.png" alt="image-20240613153107248"></p>
+<p>下断点打开监听</p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613153922944.png" alt="image-20240613153922944"></p>
+<p>直接访问test.php，成功进入断点</p>
+<p><img src="/image/article/%E5%B8%9D%E5%9B%BDCMS%E7%9A%84%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240613153950438.png" alt="image-20240613153950438"></p>
+
                 
                 <p class="end">__END__</p>
             </div>
@@ -87,7 +113,7 @@
     <div class="suffix-box-right">
         <span class="suffix-box-title">文章作者：</span>tpaer
         <br>
-        <span class="suffix-box-title">文章出处：</span><a href="/posts/3174531485.html" target="_blank">shellcode的传输与混淆</a>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/2274820670.html" target="_blank">代码审计PHPStorm断点调试</a>
         <br>
         <span class="suffix-box-title">作者签名：</span>nice or terrible.
         <br>
@@ -116,11 +142,8 @@
                 
                 <div class="article-prev-next">
                     
-                        <a href="/posts/1379073624.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/1379073624.html" title="发布于 2024-01-21 09:59">Java动态加载字节码TemplatesImpl和BCEL</a>
-                        <br>
                     
-                    
-                        <a href="/posts/4249740792.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/4249740792.html" title="发布于 2024-01-20 09:14">Java利用链CommonCollections6分析</a>
+                        <a href="/posts/564692489.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/564692489.html" title="发布于 2024-06-11 07:30">kkfile的RCE代码审计</a>
                     
                 </div>
             </div>
