@@ -81,9 +81,9 @@
 
 <h2 id="ARL功能增强配置"><a href="#ARL功能增强配置" class="headerlink" title="ARL功能增强配置"></a>ARL功能增强配置</h2><h3 id="GOV-EDU-ORG解除限制"><a href="#GOV-EDU-ORG解除限制" class="headerlink" title="GOV EDU ORG解除限制"></a>GOV EDU ORG解除限制</h3><p>config-docker.yaml</p>
 <p>修改前：</p>
-<p><img src="/image/article/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117104351368.png" alt="image-20240117104351368"></p>
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117104351368.png" alt="image-20240117104351368"></p>
 <p>修改后：</p>
-<p><img src="/image/article/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117104649977.png" alt="image-20240117104649977"></p>
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117104649977.png" alt="image-20240117104649977"></p>
 <h3 id="添加CMS指纹"><a href="#添加CMS指纹" class="headerlink" title="添加CMS指纹"></a>添加CMS指纹</h3><p>找到Ehole项目最新的finger.json</p>
 <p><a target="_blank" rel="noopener" href="https://github.com/EdgeSecurityTeam/EHole/blob/main/finger.json">https://github.com/EdgeSecurityTeam/EHole/blob/main/finger.json</a></p>
 <p>用大佬写好的脚本</p>
@@ -91,12 +91,63 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 ARL-Finger-ADD.py http://192.168.31.98:5003/ admin pwd</span><br></pre></td></tr></table></figure>
 
 <p>成功添加</p>
-<p><img src="/image/article/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117112501888.png" alt="image-20240117112501888"></p>
-<p><img src="/image/article/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117112618871.png" alt="image-20240117112618871"></p>
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117112501888.png" alt="image-20240117112501888"></p>
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117112618871.png" alt="image-20240117112618871"></p>
 <h2 id="BUG解决"><a href="#BUG解决" class="headerlink" title="BUG解决"></a>BUG解决</h2><h3 id="在kali安装出现timeout-of-12000ms-exceeded报错"><a href="#在kali安装出现timeout-of-12000ms-exceeded报错" class="headerlink" title="在kali安装出现timeout of 12000ms exceeded报错"></a>在kali安装出现timeout of 12000ms exceeded报错</h3><p>需要把443端口改为80</p>
-<p><img src="/image/article/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117102342865.png" alt="image-20240117102342865"></p>
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117102342865.png" alt="image-20240117102342865"></p>
 <p>在config-docker.yaml文件中新增</p>
-<p><img src="/image/article/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117103311679.png" alt="image-20240117103311679"></p>
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240117103311679.png" alt="image-20240117103311679"></p>
+<h1 id="ARL新版本安装"><a href="#ARL新版本安装" class="headerlink" title="ARL新版本安装"></a>ARL新版本安装</h1><p>安装docker</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">安装一些依赖</span><br><span class="line">sudo yum install -y yum-utils device-mapper-persistent-data lvm2 wget</span><br><span class="line">下载repo文件</span><br><span class="line">wget -O /etc/yum.repos.d/docker-ce.repo</span><br><span class="line">https://download.docker.com/linux/centos/docker-ce.repo</span><br><span class="line">把软件仓库地址替换为 TUNA:</span><br><span class="line">sudo sed -i &#x27;s+download.docker.com+mirrors.tuna.tsinghua.edu.cn/docker-ce+&#x27;</span><br><span class="line">/etc/yum.repos.d/docker-ce.repo</span><br><span class="line">安装</span><br><span class="line">sudo yum makecache fast</span><br><span class="line">sudo yum install docker-ce</span><br></pre></td></tr></table></figure>
+
+<p>安装docker compose</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">先安装pip,python3进行安装</span><br><span class="line">curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py</span><br><span class="line">#先升级python3</span><br><span class="line">python3 get-pip.py </span><br><span class="line">pip3 install docker-compose</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/ki9mu/ARL-plus-docker/archive/refs/tags/v2.7.1.zip</span><br><span class="line">unzip ARL-plus-docker-2.7.1.zip</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">service docker start</span><br><span class="line">docker volume create arl_db</span><br><span class="line">docker compose up -d</span><br><span class="line">docker ps</span><br></pre></td></tr></table></figure>
+
+<p>登录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http://110.41.185.80:5003</span><br><span class="line">登录凭证：admin/arlpass</span><br></pre></td></tr></table></figure>
+
+<p>取消域名限制</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_64910183/article/details/128235841">https://blog.csdn.net/m0_64910183/article/details/128235841</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">config-docker.yaml</span><br></pre></td></tr></table></figure>
+
+<p>进入docker修改config.py</p>
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240818022838271.png" alt="image-20240818022838271"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose restart</span><br></pre></td></tr></table></figure>
+
+<p>添加指纹</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 ARL-Finger-ADD.py http://110.41.185.80:5003/ admin Wbzabcd114</span><br></pre></td></tr></table></figure>
+
+<p>多用户登录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># 可以使用下面的命令添加多个平行用户, 使用 admin1/admin123 可登录docker exec -ti arl_mongodb mongo -u admin -p adminuse arldb.user.insert(&#123; username: &#x27;admin1&#x27;, password: hex_md5(&#x27;arlsalt!@#&#x27;+&#x27;admin123&#x27;)&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>oneforall设置全部改true</p>
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240818025111816.png" alt="image-20240818025111816"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker volume rm arl_db</span><br><span class="line">docker volume create arl_db</span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240818122535438.png" alt="image-20240818122535438"></p>
+<h2 id="docker-pull太慢换镜像源"><a href="#docker-pull太慢换镜像源" class="headerlink" title="docker pull太慢换镜像源"></a>docker pull太慢换镜像源</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir -p /etc/docker</span><br><span class="line"></span><br><span class="line">sudo tee /etc/docker/daemon.json &lt;&lt;-&#x27;EOF&#x27;</span><br><span class="line">&#123;</span><br><span class="line">    &quot;registry-mirrors&quot;: [</span><br><span class="line">        &quot;https://docker.1panel.live&quot;,</span><br><span class="line">        &quot;https://hub.rat.dev&quot;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br><span class="line">EOF</span><br><span class="line"></span><br><span class="line">sudo systemctl daemon-reload</span><br><span class="line">sudo systemctl restart docker</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="centos-python升级"><a href="#centos-python升级" class="headerlink" title="centos python升级"></a>centos python升级</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">yum update -y</span><br><span class="line"> </span><br><span class="line">yum -y groupinstall &quot;Development tools&quot;</span><br><span class="line"> </span><br><span class="line">yum install openssl-devel bzip2-devel expat-devel gdbm-devel readline-devel sqlite-devel psmisc libffi-devel</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">https://www.python.org/ftp/python/3.9.1/Python-3.9.1.tgz</span><br><span class="line"></span><br><span class="line">tar -xzf Python-3.9.1.tgz</span><br><span class="line"></span><br><span class="line">mkdir  /usr/local/python3/</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#  Python-3.9.1目录下</span><br><span class="line">./configure --prefix=/usr/local/python3</span><br><span class="line"></span><br><span class="line">make &amp;&amp; make install</span><br><span class="line"></span><br><span class="line">mv /usr/bin/python /usr/bin/python_old</span><br><span class="line">mv /usr/bin/python_old /usr/bin/python</span><br><span class="line">mv /usr/bin/pip /usr/bin/pip_old</span><br><span class="line"></span><br><span class="line">unlink /usr/bin/python3</span><br><span class="line">ln -s /usr/local/python3/bin/python3.9 /usr/bin/python3</span><br><span class="line"></span><br><span class="line">ln -s /usr/local/python3/bin/pip3.9 /usr/bin/pip</span><br></pre></td></tr></table></figure>
+
+<h3 id="bug"><a href="#bug" class="headerlink" title="bug"></a>bug</h3><p>WARNING: pip is configured with locations that require TLS&#x2F;SSL, however the ssl module in Python is not available.</p>
+<p><img src="/ARL%E8%B5%84%E4%BA%A7%E4%BE%A6%E5%AF%9F%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8.assets/image-20240818004358059.png" alt="image-20240818004358059"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip config --global set global.index-url http://mirrors.aliyun.com/pypi/simple/</span><br></pre></td></tr></table></figure>
+
+<p>记事本打开pip.ini文件，在末行添加</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[install]</span><br><span class="line">trusted-host = mirrors.aliyun.com</span><br></pre></td></tr></table></figure>
+
 
                 
                 <p class="end">__END__</p>
@@ -190,6 +241,8 @@
                         <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
                     
                         <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
+                    
+                        <li class=""><a href="/comment" class="" target="_self"><span class="iconfont icon-comments-fill"></span>留言板</a></li>
                     
                 </ul> 
             </div> 
@@ -474,6 +527,15 @@
                     href   : "javascript:;",
                     type   : "",
                     class  : "search",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "留言板",
+                    icon   : "icon-comments-fill",
+                    href   : "/comment",
+                    type   : "comment",
+                    class  : "",
                     target : "_self"
                 },
             

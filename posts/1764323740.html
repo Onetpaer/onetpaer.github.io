@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>
+        
+            spring-framework目录遍历漏洞（cve-2024-38816）代码审计
+        
+    </title>
+    <link rel="shortcut icon" href="#"/>
+
+    <link type="text/css" rel="stylesheet" href="/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSerifSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="/font/Roboto.css">
+    <link type="text/css" rel="stylesheet" href="/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="/css/base.css">
+    <link type="text/css" rel="stylesheet" href="/css/code.css">
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="TPA HACK-NOTE" type="application/atom+xml">
+</head>
+<body>
+    <a id="cover"></a>
+    <link type="text/css" rel="stylesheet" href="/css/post.css">
+<div id="header" class="header">
+    <div class="vertical">
+        <div class="inner">
+            
+                <h1 class="header-subtitle">spring-framework目录遍历漏洞（cve-2024-38816）代码审计</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2024-09-23
+                        </span>
+                        
+                            
+                                <span id="/posts/1764323740.html" class="leancloud_visitors" data-flag-title="spring-framework目录遍历漏洞（cve-2024-38816）代码审计">
+                                    <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                                </span>
+                            
+                              
+                        
+                    </p>
+                    
+                        
+                            <span class="category-color">web</span>
+                        
+                    
+                    
+                        
+                            <span class="tag-color">网络安全</span>
+                        
+                    
+                </div>
+            
+        </div>
+    </div>
+    
+</div>
+<div id="container">
+    
+        <!-- 文章页面 -->
+        <div id="article">
+            <div class="toc"></div>
+            <div class="article-body">
+                <h1 id="spring-framework目录遍历漏洞（cve-2024-38816）代码审计"><a href="#spring-framework目录遍历漏洞（cve-2024-38816）代码审计" class="headerlink" title="spring-framework目录遍历漏洞（cve-2024-38816）代码审计"></a>spring-framework目录遍历漏洞（cve-2024-38816）代码审计</h1><p>refer：</p>
+<p><a target="_blank" rel="noopener" href="https://securityonline.info/cve-2024-38816-spring-framework-path-traversal-vulnerability-threatens-millions/">https://securityonline.info/cve-2024-38816-spring-framework-path-traversal-vulnerability-threatens-millions/</a></p>
+<p>影响版本：</p>
+<p>spring-framework &lt; 5.3.40</p>
+<p>spring-framework &lt; 6.0.24</p>
+<p>spring-framework &lt; 6.1.13</p>
+<blockquote>
+<p>Any application using the <a target="_blank" rel="noopener" href="https://spring.io/security/cve-2024-38816">affected</a> versions of Spring Framework (5.3.0 to 5.3.39, 6.0.0 to 6.0.23, and 6.1.0 to 6.1.12) and serving static resources through the vulnerable components is at risk.</p>
+</blockquote>
+<p>该漏洞在于 Spring Framework 如何处理通过功能性 Web 框架 WebMvc.fn 或 WebFlux.fn 提供的静态资源。通过构建恶意 HTTP 请求，攻击者可以绕过安全措施并从服务器的文件系统中检索任意文件，包括配置文件、源代码和用户数据。</p>
+<blockquote>
+<p>The vulnerability lies in how Spring Framework handles static resources served through the functional web frameworks WebMvc.fn or WebFlux.fn. By crafting malicious HTTP requests, attackers can bypass security measures and retrieve arbitrary files from the server’s file system, including configuration files, source code, and user data.</p>
+</blockquote>
+<p>修改比对 6.1.13 &amp; 6.1.12</p>
+<h2 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h2><p><strong>环境搭建：</strong></p>
+<p>JDK 21 &gt; 17（spring boot 3.x只支持 &gt; JDK17）</p>
+<p>spring boot 3.3.3</p>
+<p>spring-framework-bom 6.1.12</p>
+<p>测试WebMvc.fn：spring-boot-starter-web， spring-boot-starter-undertow</p>
+<p>测试WebFlux.fn：spring-boot-starterwebflux，spring-boot-starter-undertow</p>
+<p>spring-boot-starter-web和spring-boot-starter-webflux最 好不要出现在⼀个项目，webmvc会干扰webflux。 不用再指定版本，springboot做过版本管理。tomcat和 jetty不支持这个漏洞，所以使用嵌入的undertow服务器，使用springboot内置的tomcat会报错400.</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924091139925.png" alt="image-20240924091139925"></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;</span></span></span><br><span class="line"><span class="string"><span class="tag">           http://maven.apache.org/POM/4.0.0</span></span></span><br><span class="line"><span class="string"><span class="tag">           http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.example<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>your-project-name<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>0.0.1-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">packaging</span>&gt;</span>jar<span class="tag">&lt;/<span class="name">packaging</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- 设置 Spring Boot 父项目 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.3.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">relativePath</span>/&gt;</span> <span class="comment">&lt;!-- lookup parent from repository --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- 定义项目的属性 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">properties</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">java.version</span>&gt;</span>17<span class="tag">&lt;/<span class="name">java.version</span>&gt;</span> <span class="comment">&lt;!-- 或根据需求选择 Java 版本 --&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 通常不需要单独指定 Spring Framework 版本，因为 Spring Boot 管理了 --&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- &lt;spring-framework.version&gt;6.1.12&lt;/spring-framework.version&gt; --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">properties</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- 管理依赖版本 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 通常不需要手动引入 Spring Framework BOM --&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- Spring Boot 父项目已经管理了 Spring Framework 的版本 --&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 如果确实需要，确保版本兼容 --&gt;</span></span><br><span class="line">            <span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">            &lt;dependency&gt;</span></span><br><span class="line"><span class="comment">                &lt;groupId&gt;org.springframework&lt;/groupId&gt;</span></span><br><span class="line"><span class="comment">                &lt;artifactId&gt;spring-framework-bom&lt;/artifactId&gt;</span></span><br><span class="line"><span class="comment">                &lt;version&gt;$&#123;spring-framework.version&#125;&lt;/version&gt;</span></span><br><span class="line"><span class="comment">                &lt;type&gt;pom&lt;/type&gt;</span></span><br><span class="line"><span class="comment">                &lt;scope&gt;import&lt;/scope&gt;</span></span><br><span class="line"><span class="comment">            &lt;/dependency&gt;</span></span><br><span class="line"><span class="comment">            --&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 引入 Spring Boot BOM 以确保兼容性 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-dependencies<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.3.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- 项目依赖 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- Spring Boot Starter Web，排除默认的 Tomcat --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">exclusions</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">exclusion</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-tomcat<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">exclusion</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">exclusions</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">&lt;!-- Spring Boot Starter Undertow 代替默认的 Tomcat --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-undertow<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">&lt;!-- 其他必要的依赖，例如测试 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-test<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">&lt;!-- 插件配置 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- Spring Boot Maven 插件 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.3.3<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>创建WebMvc.fn或WebFlux.fn静态资源映射配置类。代码没区别，导包不⼀样，导⼊webmvc或webflux包下的 RouterFunction，ServerResponse，RouterFunctions。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.springframework.core.io.FileSystemResource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.function.RouterFunction;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.function.RouterFunctions;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.servlet.function.ServerResponse;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">WebConfig</span> &#123;</span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="keyword">public</span> RouterFunction&lt;ServerResponse&gt; <span class="title function_">route</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> RouterFunctions</span><br><span class="line">                .resources(<span class="string">&quot;/static/**&quot;</span>, <span class="keyword">new</span></span><br><span class="line">                        <span class="title class_">FileSystemResource</span>(<span class="string">&quot;G:/test/test1/test2/static/&quot;</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>复现过程：</strong></p>
+<p>目录结构如下：</p>
+<p>1.txt：555555</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924091522898.png" alt="image-20240924091522898"></p>
+<p>1.txt：666666</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924091609168.png" alt="image-20240924091609168"></p>
+<p>正常读取G:&#x2F;test&#x2F;test1&#x2F;test2&#x2F;static&#x2F;静态目录下1.txt文件</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924091727296.png" alt="image-20240924091727296"></p>
+<p>目录穿越读取G:&#x2F;test&#x2F;1.txt文件内容</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924091755049.png" alt="image-20240924091755049"></p>
+<h2 id="代码审计"><a href="#代码审计" class="headerlink" title="代码审计"></a>代码审计</h2><p>比较spring-framework v6.1.13 和 v6.1.12 diff，发现一条对齐 RouterFunctions 资源处理的 Commit</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924094356795.png" alt="image-20240924094356795"></p>
+<p>这条commit修改了</p>
+<p>spring-webflux&#x2F;src&#x2F;main&#x2F;java&#x2F;org&#x2F;springframework&#x2F;web&#x2F;reactive&#x2F;function&#x2F;server&#x2F;PathResourceLookupFunction.java</p>
+<p>spring-webmvc&#x2F;src&#x2F;main&#x2F;java&#x2F;org&#x2F;springframework&#x2F;web&#x2F;servlet&#x2F;function&#x2F;PathResourceLookupFunction.java</p>
+<p>分别对应WebFlux.fn和WebMvc.fn</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924094656924.png" alt="image-20240924094656924"></p>
+<p>IDEA maven下载spring-framework源码，以WebMvc为例进行分析，全局搜索定位到PathResourceLookupFunction类</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924095833820.png" alt="image-20240924095833820"></p>
+<p>让AI给这段代码加上注释</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.core.io.ClassPathResource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.core.io.Resource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.core.io.ResourceUtils;</span><br><span class="line"><span class="keyword">import</span> org.springframework.util.Assert;</span><br><span class="line"><span class="keyword">import</span> org.springframework.util.PathPattern;</span><br><span class="line"><span class="keyword">import</span> org.springframework.util.PathPatternParser;</span><br><span class="line"><span class="keyword">import</span> org.springframework.util.StringUtils;</span><br><span class="line"><span class="keyword">import</span> org.springframework.web.reactive.function.server.ServerRequest;</span><br><span class="line"><span class="keyword">import</span> reactor.core.publisher.Mono;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.UncheckedIOException;</span><br><span class="line"><span class="keyword">import</span> java.nio.charset.StandardCharsets;</span><br><span class="line"><span class="keyword">import</span> java.util.Optional;</span><br><span class="line"><span class="keyword">import</span> java.util.function.Function;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 一个函数接口实现，用于根据请求路径匹配和查找相应的资源。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">PathResourceLookupFunction</span> <span class="keyword">implements</span> <span class="title class_">Function</span>&lt;ServerRequest, Optional&lt;Resource&gt;&gt; &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 用于匹配请求路径的模式。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> PathPattern pattern;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 资源的基础位置。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Resource location;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 构造函数，初始化路径模式和资源位置。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> pattern  路径模式字符串，用于匹配请求路径。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> location 资源的基础位置，不能为 null。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">PathResourceLookupFunction</span><span class="params">(String pattern, Resource location)</span> &#123;</span><br><span class="line">        <span class="comment">// 确保路径模式字符串不为空</span></span><br><span class="line">        Assert.hasLength(pattern, <span class="string">&quot;&#x27;pattern&#x27; must not be empty&quot;</span>);</span><br><span class="line">        <span class="comment">// 确保资源位置不为 null</span></span><br><span class="line">        Assert.notNull(location, <span class="string">&quot;&#x27;location&#x27; must not be null&quot;</span>);</span><br><span class="line">        <span class="comment">// 解析路径模式字符串为 PathPattern 对象</span></span><br><span class="line">        <span class="built_in">this</span>.pattern = PathPatternParser.defaultInstance.parse(pattern);</span><br><span class="line">        <span class="built_in">this</span>.location = location;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 根据服务器请求查找匹配的资源。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> request 服务器请求对象。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 一个包含匹配资源的 Optional 对象，如果没有匹配则返回 Optional.empty()。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Optional&lt;Resource&gt; <span class="title function_">apply</span><span class="params">(ServerRequest request)</span> &#123;</span><br><span class="line">        <span class="comment">// 获取请求路径的 PathContainer</span></span><br><span class="line">        <span class="type">PathContainer</span> <span class="variable">pathContainer</span> <span class="operator">=</span> request.requestPath().pathWithinApplication();</span><br><span class="line">        <span class="comment">// 如果路径不匹配模式，返回空</span></span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">this</span>.pattern.matches(pathContainer)) &#123;</span><br><span class="line">            <span class="keyword">return</span> Optional.empty();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 提取匹配的路径部分</span></span><br><span class="line">        pathContainer = <span class="built_in">this</span>.pattern.extractPathWithinPattern(pathContainer);</span><br><span class="line">        <span class="comment">// 处理路径，去除不必要的字符</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">path</span> <span class="operator">=</span> processPath(pathContainer.value());</span><br><span class="line">        <span class="comment">// 如果路径包含百分号，进行 URI 解码</span></span><br><span class="line">        <span class="keyword">if</span> (path.contains(<span class="string">&quot;%&quot;</span>)) &#123;</span><br><span class="line">            path = StringUtils.uriDecode(path, StandardCharsets.UTF_8);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 如果路径为空或无效，返回空</span></span><br><span class="line">        <span class="keyword">if</span> (!StringUtils.hasLength(path) || isInvalidPath(path)) &#123;</span><br><span class="line">            <span class="keyword">return</span> Optional.empty();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 在基础位置创建相对路径的资源</span></span><br><span class="line">            <span class="type">Resource</span> <span class="variable">resource</span> <span class="operator">=</span> <span class="built_in">this</span>.location.createRelative(path);</span><br><span class="line">            <span class="comment">// 如果资源可读且位于基础位置下，返回该资源</span></span><br><span class="line">            <span class="keyword">if</span> (resource.isReadable() &amp;&amp; isResourceUnderLocation(resource)) &#123;</span><br><span class="line">                <span class="keyword">return</span> Optional.of(resource);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">return</span> Optional.empty();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException ex) &#123;</span><br><span class="line">            <span class="comment">// 将检查型异常转换为非检查型异常并抛出</span></span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">UncheckedIOException</span>(ex);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 处理路径，去除前导和不必要的斜杠，并确保路径有效。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> path 输入的路径字符串。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 处理后的路径字符串。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> String <span class="title function_">processPath</span><span class="params">(String path)</span> &#123;</span><br><span class="line">        <span class="type">boolean</span> <span class="variable">slash</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; path.length(); i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (path.charAt(i) == <span class="string">&#x27;/&#x27;</span>) &#123;</span><br><span class="line">                slash = <span class="literal">true</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (path.charAt(i) &gt; <span class="string">&#x27; &#x27;</span> &amp;&amp; path.charAt(i) != <span class="number">127</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (i == <span class="number">0</span> || (i == <span class="number">1</span> &amp;&amp; slash)) &#123;</span><br><span class="line">                    <span class="keyword">return</span> path;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// 去除前导无效字符</span></span><br><span class="line">                path = slash ? <span class="string">&quot;/&quot;</span> + path.substring(i) : path.substring(i);</span><br><span class="line">                <span class="keyword">return</span> path;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 如果路径仅包含斜杠，返回斜杠或空字符串</span></span><br><span class="line">        <span class="keyword">return</span> (slash ? <span class="string">&quot;/&quot;</span> : <span class="string">&quot;&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 检查路径是否无效，防止访问受限制的目录或进行路径穿越攻击。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> path 需要检查的路径字符串。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 如果路径无效则返回 true，否则返回 false。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isInvalidPath</span><span class="params">(String path)</span> &#123;</span><br><span class="line">        <span class="comment">// 禁止访问 WEB-INF 和 META-INF 目录</span></span><br><span class="line">        <span class="keyword">if</span> (path.contains(<span class="string">&quot;WEB-INF&quot;</span>) || path.contains(<span class="string">&quot;META-INF&quot;</span>)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 检查是否包含协议或 URL 前缀，防止绝对路径访问</span></span><br><span class="line">        <span class="keyword">if</span> (path.contains(<span class="string">&quot;:/&quot;</span>)) &#123;</span><br><span class="line">            <span class="type">String</span> <span class="variable">relativePath</span> <span class="operator">=</span> (path.charAt(<span class="number">0</span>) == <span class="string">&#x27;/&#x27;</span> ? path.substring(<span class="number">1</span>) : path);</span><br><span class="line">            <span class="keyword">if</span> (ResourceUtils.isUrl(relativePath) || relativePath.startsWith(<span class="string">&quot;url:&quot;</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 检查路径是否包含路径穿越序列</span></span><br><span class="line">        <span class="keyword">return</span> path.contains(<span class="string">&quot;..&quot;</span>) &amp;&amp; StringUtils.cleanPath(path).contains(<span class="string">&quot;../&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 检查资源是否位于基础位置下，防止路径穿越。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> resource 需要检查的资源。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 如果资源位于基础位置下则返回 true，否则返回 false。</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> IOException 如果读取资源路径时发生 IO 异常。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">isResourceUnderLocation</span><span class="params">(Resource resource)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">// 确保资源类型与基础位置一致</span></span><br><span class="line">        <span class="keyword">if</span> (resource.getClass() != <span class="built_in">this</span>.location.getClass()) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        String resourcePath;</span><br><span class="line">        String locationPath;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 根据资源类型获取路径</span></span><br><span class="line">        <span class="keyword">if</span> (resource <span class="keyword">instanceof</span> UrlResource) &#123;</span><br><span class="line">            resourcePath = resource.getURL().toExternalForm();</span><br><span class="line">            locationPath = StringUtils.cleanPath(<span class="built_in">this</span>.location.getURL().toString());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (resource <span class="keyword">instanceof</span> ClassPathResource classPathResource) &#123;</span><br><span class="line">            resourcePath = classPathResource.getPath();</span><br><span class="line">            locationPath = StringUtils.cleanPath(((ClassPathResource) <span class="built_in">this</span>.location).getPath());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            resourcePath = resource.getURL().getPath();</span><br><span class="line">            locationPath = StringUtils.cleanPath(<span class="built_in">this</span>.location.getURL().getPath());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果资源路径与基础位置路径相同，返回 true</span></span><br><span class="line">        <span class="keyword">if</span> (locationPath.equals(resourcePath)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 确保基础位置路径以斜杠结尾</span></span><br><span class="line">        locationPath = (locationPath.endsWith(<span class="string">&quot;/&quot;</span>) || locationPath.isEmpty() ? locationPath : locationPath + <span class="string">&quot;/&quot;</span>);</span><br><span class="line">        <span class="comment">// 检查资源路径是否以基础位置路径开头</span></span><br><span class="line">        <span class="keyword">if</span> (!resourcePath.startsWith(locationPath)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 确保资源路径不包含路径穿越序列</span></span><br><span class="line">        <span class="keyword">return</span> !resourcePath.contains(<span class="string">&quot;%&quot;</span>) ||</span><br><span class="line">                !StringUtils.uriDecode(resourcePath, StandardCharsets.UTF_8).contains(<span class="string">&quot;../&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 返回对象的字符串表示，包含路径模式和资源位置。</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> 对象的字符串表示。</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.pattern + <span class="string">&quot; -&gt; &quot;</span> + <span class="built_in">this</span>.location;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>在代码中有StringUtils.cleanPath(path).contains(“..&#x2F;“)去检查目录穿越，继续跟踪cleanPath方法，这个方法用来处理路径中的反斜杠、斜杠、不必要的当前目录符号(.)、上级目录符号(..)等</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title function_">cleanPath</span><span class="params">(String path)</span> &#123;</span><br><span class="line">    <span class="comment">// 如果路径为空或长度为0，直接返回原路径</span></span><br><span class="line">    <span class="keyword">if</span> (!hasLength(path)) &#123;</span><br><span class="line">        <span class="keyword">return</span> path;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String normalizedPath;</span><br><span class="line">    <span class="comment">// 优化处理：如果路径中包含反斜杠（\），则进行替换</span></span><br><span class="line">    <span class="keyword">if</span> (path.indexOf(<span class="string">&#x27;\\&#x27;</span>) != -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// 将双反斜杠替换为单一的文件夹分隔符（通常为 /）</span></span><br><span class="line">        normalizedPath = replace(path, DOUBLE_BACKSLASHES, FOLDER_SEPARATOR);</span><br><span class="line">        <span class="comment">// 将 Windows 特有的文件夹分隔符（\）替换为统一的文件夹分隔符（/）</span></span><br><span class="line">        normalizedPath = replace(normalizedPath, WINDOWS_FOLDER_SEPARATOR, FOLDER_SEPARATOR);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 如果没有反斜杠，直接使用原路径</span></span><br><span class="line">        normalizedPath = path;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">String</span> <span class="variable">pathToUse</span> <span class="operator">=</span> normalizedPath;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 快捷方式：如果路径中不包含点（.），则无需进一步处理，直接返回</span></span><br><span class="line">    <span class="keyword">if</span> (pathToUse.indexOf(<span class="string">&#x27;.&#x27;</span>) == -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> pathToUse;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理路径前缀（例如 &quot;file:&quot;），以避免将其作为路径的一部分进行解析</span></span><br><span class="line">    <span class="type">int</span> <span class="variable">prefixIndex</span> <span class="operator">=</span> pathToUse.indexOf(<span class="string">&#x27;:&#x27;</span>);</span><br><span class="line">    <span class="type">String</span> <span class="variable">prefix</span> <span class="operator">=</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">    <span class="keyword">if</span> (prefixIndex != -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// 提取前缀（例如 &quot;file:&quot;）</span></span><br><span class="line">        prefix = pathToUse.substring(<span class="number">0</span>, prefixIndex + <span class="number">1</span>);</span><br><span class="line">        <span class="comment">// 如果前缀中包含文件夹分隔符，说明前缀不合法，忽略前缀</span></span><br><span class="line">        <span class="keyword">if</span> (prefix.contains(FOLDER_SEPARATOR)) &#123;</span><br><span class="line">            prefix = <span class="string">&quot;&quot;</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 移除前缀部分，保留后面的路径进行处理</span></span><br><span class="line">            pathToUse = pathToUse.substring(prefixIndex + <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果路径以文件夹分隔符开头，保留分隔符并移除路径开头的分隔符</span></span><br><span class="line">    <span class="keyword">if</span> (pathToUse.startsWith(FOLDER_SEPARATOR)) &#123;</span><br><span class="line">        prefix = prefix + FOLDER_SEPARATOR;</span><br><span class="line">        pathToUse = pathToUse.substring(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将路径按文件夹分隔符拆分为数组</span></span><br><span class="line">    <span class="comment">// private static final String FOLDER_SEPARATOR = &quot;/&quot;;</span></span><br><span class="line">    String[] pathArray = delimitedListToStringArray(pathToUse, FOLDER_SEPARATOR);</span><br><span class="line">    <span class="comment">// 使用双端队列（Deque）来存储处理后的路径元素</span></span><br><span class="line">    Deque&lt;String&gt; pathElements = <span class="keyword">new</span> <span class="title class_">ArrayDeque</span>&lt;&gt;(pathArray.length);</span><br><span class="line">    <span class="type">int</span> <span class="variable">tops</span> <span class="operator">=</span> <span class="number">0</span>; <span class="comment">// 记录 &quot;..&quot; 的数量</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从路径数组的最后一个元素开始逆序遍历</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> pathArray.length - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">element</span> <span class="operator">=</span> pathArray[i];</span><br><span class="line">        <span class="keyword">if</span> (CURRENT_PATH.equals(element)) &#123;</span><br><span class="line">            <span class="comment">// 当前目录（.）无需处理，直接跳过</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (TOP_PATH.equals(element)) &#123;</span><br><span class="line">            <span class="comment">// 遇到上一级目录（..），增加 tops 计数</span></span><br><span class="line">            tops++;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (tops &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">// 如果有待消除的上一级目录，减少 tops 计数，忽略当前元素</span></span><br><span class="line">                tops--;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 正常的路径元素，添加到队列的前面</span></span><br><span class="line">                pathElements.addFirst(element);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 如果处理后的路径元素数量与原数组相同，说明没有需要清理的部分，直接返回规范化后的路径</span></span><br><span class="line">    <span class="keyword">if</span> (pathArray.length == pathElements.size()) &#123;</span><br><span class="line">        <span class="keyword">return</span> normalizedPath;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 保留剩余的上一级目录（..）</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; tops; i++) &#123;</span><br><span class="line">        pathElements.addFirst(TOP_PATH);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果队列中只有一个空元素，并且前缀不以文件夹分隔符结尾，添加当前目录（.）</span></span><br><span class="line">    <span class="keyword">if</span> (pathElements.size() == <span class="number">1</span> &amp;&amp; pathElements.getLast().isEmpty() &amp;&amp; !prefix.endsWith(FOLDER_SEPARATOR)) &#123;</span><br><span class="line">        pathElements.addFirst(CURRENT_PATH);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将队列中的路径元素重新连接为字符串，使用文件夹分隔符作为分隔符</span></span><br><span class="line">    <span class="keyword">final</span> <span class="type">String</span> <span class="variable">joined</span> <span class="operator">=</span> collectionToDelimitedString(pathElements, FOLDER_SEPARATOR);</span><br><span class="line">    <span class="comment">// 如果有前缀，则将前缀与连接后的路径组合，否则直接返回连接后的路径</span></span><br><span class="line">    <span class="keyword">return</span> prefix.isEmpty() ? joined : prefix + joined;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该漏洞原理与CVE-2018-1271 Spring MVC的穿越漏洞原理一致，由于String[] pathArray &#x3D; delimitedListToStringArray(pathToUse, FOLDER_SEPARATOR);的方法会将&#x2F;&#x2F;当成⼀个目录，而FileSystem不会把&#x2F;&#x2F;当成一个目录</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924101504489.png" alt="image-20240924101504489"></p>
+<p>做一下测试，发现解析处理的路径确实不一样</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924103139013.png" alt="image-20240924103139013"></p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924103155246.png" alt="image-20240924103155246"></p>
+<p>bypass：</p>
+<p>利用上面的原理</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//../ 穿越1级目录</span><br><span class="line">///../../ 穿越2级目录</span><br></pre></td></tr></table></figure>
+
+<p>但由于processPath方法处理不能出现连续的&#x2F;需要使用\反斜杠进行分割，但由于url不能出现\反斜杠，所以用url编码%5c进行绕过</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924104820926.png" alt="image-20240924104820926"></p>
+<p>成功绕过processPath对多个&#x2F;的限制</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924104943838.png" alt="image-20240924104943838"></p>
+<p>最终的payload</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240924091755049.png" alt="image-20240924091755049"></p>
+
+                
+                <p class="end">__END__</p>
+            </div>
+            <div class="article-footer">
+                <div class="suffix-box">
+    <div class="suffix-box-left">
+        <img src="/image/sidebar/avatar.png" alt="tpaer">
+    </div>
+    <div class="suffix-box-right">
+        <span class="suffix-box-title">文章作者：</span>tpaer
+        <br>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/1764323740.html" target="_blank">spring-framework目录遍历漏洞（cve-2024-38816）代码审计</a>
+        <br>
+        <span class="suffix-box-title">作者签名：</span>nice or terrible.
+        <br>
+        <span class="suffix-box-title">关于主题：</span><a href="" target="_blank"></a>
+        <br>
+        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+        <br>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+                
+                    <div class="category">
+                        分类：
+                        
+                            <a href="/category/web/">web</a>
+                        
+                    </div>
+                
+                
+                    <div class="tag">
+                        标签：
+                        
+                            <a href="/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+                        
+                    </div>
+                
+                <div class="article-prev-next">
+                    
+                        <a href="/posts/3738048065.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/3738048065.html" title="发布于 2024-09-23 08:17">逆向分析WINRAR去除广告弹窗</a>
+                        <br>
+                    
+                    
+                        <a href="/posts/4044079439.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/4044079439.html" title="发布于 2024-09-18 07:13">CTF-REVERSE-EASYHOOK-Writeup</a>
+                    
+                </div>
+            </div>
+             
+        </div>
+    
+</div>
+    <div id="footer">
+    <div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>
+</div>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        
+            <div class="menu-notice">
+                <span class="iconfont icon-notice"></span>
+                <div class="notice">
+                    <span>Tpaer Blog</span>
+                </div>
+            </div>
+        
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar">
+                    <img src="/image/sidebar/avatar.png">
+                </div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user">
+                        
+                            <a href="https://onetpaer.github.io" target="_blank"><span>tpaer</span></a>
+                        
+                    </div>
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul>
+                    
+                        <li class=""><a href="/" class="" target="_self"><span class="iconfont icon-home-fill"></span>首页</a></li>
+                    
+                        <li class=""><a href="/category" class="" target="_self"><span class="iconfont icon-folder-fill"></span>分类</a></li>
+                    
+                        <li class=""><a href="/tag" class="" target="_self"><span class="iconfont icon-discount-fill"></span>标签</a></li>
+                    
+                        <li class=""><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
+                    
+                        <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
+                    
+                        <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
+                    
+                        <li class=""><a href="/comment" class="" target="_self"><span class="iconfont icon-comments-fill"></span>留言板</a></li>
+                    
+                </ul> 
+            </div> 
+            <div class="menu-link">
+                <div class="box">
+                    <div class="image-box"></div>
+                </div>
+                
+                    <a name="GitHub" href="https://github.com/onetpaer" class="" target="_blank" data=""><span class="iconfont icon-github"></span></a>
+                
+            </div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="/css/search.css">
+<script type="text/javascript" src="/js/iscroll.js"></script>
+<script type="text/javascript" src="/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+    
+    <link type="text/css" rel="stylesheet" href="/css/APlayer.css">
+    <script type="text/javascript" src="/js/APlayer.min.js"></script>
+    <script type="text/javascript" src="/js/Meting.min.js"></script>
+    <script>
+        var meting_api = 'https://api.i-meto.com/meting/api?server=:server&type=:type&id=:id&auth=:auth&r=:r';
+    </script>
+    <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+
+    <div class="wrap-right">
+    <div class="wrap-right-hide">
+         <div class="wrap-right-button favorites">
+            <div class="iconbox" switch="false">
+                <span class="iconfont icon-favorites"></span>
+            </div>
+            <span class="icontext">关注</span>
+         </div>
+        <div class="wrap-right-button search">
+            <div class="iconbox">
+                <span class="iconfont icon-search-menu"></span>
+            </div>
+            <span class="icontext">搜索</span>
+        </div>
+        <div class="wrap-right-button menu-button">
+            <div class="iconbox">
+                <span class="iconfont icon-menu"></span>
+            </div>
+            <span class="icontext">菜单</span>
+        </div>
+        <div class="wrap-right-button mode">
+            <div class="light">
+                <div class="iconbox">
+                    <span class="iconfont icon-daymode"></span>
+                </div>
+                <span class="icontext">浅色模式</span>
+            </div>
+            <div class="dark">
+                <div class="iconbox">
+                    <span class="iconfont icon-nightmode-fill"></span>
+                </div>
+                <span class="icontext">深色模式</span>
+            </div>
+        </div>
+        <div class="wrap-right-button bottom">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">跳至底部</span>
+        </div>
+    </div>
+    <div class="wrap-right-show">
+        <div class="wrap-right-button set">
+            <div class="iconbox">
+                <span class="iconfont icon-setting"></span>
+            </div>
+            <span class="icontext">设置</span>
+        </div>
+        <div class="wrap-right-button top">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">返回顶部</span>
+        </div>
+    </div>
+</div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : "onetpaer",
+        GitHubRepositories : "hacker-note",
+
+        User             : "tpaer",
+        UserAvatar       : "/image/sidebar/avatar.png",
+        WebsiteStartDate : "2023-01-01",
+        Home             : "https://onetpaer.github.io",
+
+        WebsiteTitleBlur         : "(◍´꒳`◍) Hi, Tpaer BLOG",
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : "(*´∇｀*) Welcome back!",
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : {
+            light : "/image/website/logo/tlogo.png",
+            dark  : "/image/website/logo/tlogo.png"
+        },
+
+        ProgressBar : {
+            id       : "topProgressBar",
+            color    : "#77B6FF",
+            height   : "2px",
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound : {
+                tension  : 16,
+                friction : 5
+            },
+            spinner : {
+                id     : "spinner",
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : "#F0F0F0",
+                    stroke     : "#272633",
+                    base       : "",
+                    child      : "#272633"
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : "rgba(255, 255, 255, .2)",
+            clearOffset : 0.3
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : "60%",
+            colorBrightness  : "50%",
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : "random",
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                "/image/header/home.png",
+            
+        ],
+        HomeBannerText  : "Cybersecurity",
+
+        ArticleHeaderImage : [
+            
+                "/image/header/article.png",
+            
+                "/image/header/article3.png",
+            
+                "/image/header/article4.png",
+            
+        ],
+
+        OtherBannerText : "All because of love",
+
+        Error : {
+            icon    : "icon-swimming",
+            title   : "PAGE NOT FOUND",
+            content : [
+                
+                    "很抱歉，您访问的页面不存在！",
+                
+                    "可能是输入地址有误或该地址已变更。",
+                
+            ],
+            buttons : [
+                
+                    {
+                        icon  : "icon-home",
+                        text  : "返回首页",
+                        href  : "/",
+                        class : ""
+                    },
+                
+            ]
+        },
+
+        MenuNotice : {
+            enable : true,
+            notice : "Tpaer Blog",
+            speed  : 20
+        },
+        MenuList : [
+            
+                {
+                    name   : "首页",
+                    icon   : "icon-home-fill",
+                    href   : "/",
+                    type   : "index",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "分类",
+                    icon   : "icon-folder-fill",
+                    href   : "/category",
+                    type   : "category",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "标签",
+                    icon   : "icon-discount-fill",
+                    href   : "/tag",
+                    type   : "tag",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "归档",
+                    icon   : "icon-calendar-fill",
+                    href   : "/archive",
+                    type   : "archive",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "关于",
+                    icon   : "icon-about-fill",
+                    href   : "/about",
+                    type   : "about",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "搜索",
+                    icon   : "icon-search-menu",
+                    href   : "javascript:;",
+                    type   : "",
+                    class  : "search",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "留言板",
+                    icon   : "icon-comments-fill",
+                    href   : "/comment",
+                    type   : "comment",
+                    class  : "",
+                    target : "_self"
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        name   : "GitHub",
+                        icon   : "icon-github",
+                        href   : "https://github.com/onetpaer",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : "<div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>",
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                "Tpaer Blog",
+                            
+                                "",
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : "",
+
+        Donate : {
+            paypal  : "",
+            bitcoin : "",
+            alipay  : "/image/donate/alipay.png",
+            wechat  : "/image/donate/wechat.png"
+        },
+
+        Search : {
+            applicationID : "TIB5V1ZDSN",
+            apiKey        : "eb10299c1d35e47748cf90761834aec4",
+            indexName     : "hack-note",
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : "搜索",
+                empty       : "未发现与 「${query}」 相关的内容",
+                stats       : "${hits} 条相关条目，使用了 ${time} 毫秒",
+            }
+        }, 
+
+        Comment : {
+            switch : true,
+            type   : "Valine",
+        },
+
+        Waline : {
+            el              : ".comments-content",
+            serverURL       : "",
+            path            : window.location.pathname,
+            meta            : "['nick', 'mail', 'link']",
+            requiredMeta    : "['nick', 'mail']",
+            pageSize        : 10,
+            lang            : "zh-cn",
+            locale: {
+                admin       : "博主",
+                anonymous   : "匿名用户",
+                sofa        : "快来做第一个评论的人吧 ~",
+                placeholder : "你是我一生只会遇见一次的惊喜...",
+            },
+            dark            : "html[color-scheme='dark']",
+            search          : false,
+            pageview        : true,
+            comment         : true,
+            copyright       : false,
+        },
+
+        Valine : {
+            el             : ".comments-content",
+            appId          : "srhKtvWPQTWYKh3qX8G8M7v0-gzGzoHsz",
+            appKey         : "8uVSP1q6UlALVC5igYfIfv2h",
+            serverURLs     : "",
+            placeholder    : "你是我一生只会遇见一次的惊喜...",
+            avatar         : "mm",
+            meta           : "nick,mail,link",
+            requiredFields : "nick,mail",
+            pageSize       : 5,
+            lang           : "zh-cn",
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : ".toc",
+            contentSelector       : ".article-body",
+            headingSelector       : "h1, h2, h3, h4, h5",
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : ".toc",
+            positionFixedClass    : "toc-fixed",
+            fixedSidebarOffset    : "",
+        },
+
+        Require : {
+            baseUrl     : "/js/",
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : "Meting"
+        },
+        APlayer : {
+            container : ".aplayer",
+            fixed     : true,
+            autoplay  : false,
+            loop      : "all",
+            order     : "random",
+            preload   : "auto",
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : "Endless Tears",
+                        artist : "CLIFF EDGE",
+                        cover  : "/music/cover/Endless Tears.jpg",
+                        url    : "/music/song/Endless Tears.mp3",
+                        lrc    : "/music/lrc/Endless Tears.lrc"
+                    },
+                
+            ]
+        },
+        Meting : {
+            api      : "https://api.i-meto.com/meting/api",
+            id       : "3778678", 
+            lrcshow  : false, 
+            server   : "netease", 
+            type     : "playlist", 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : "all", 
+            order    : "random", 
+            preload  : "auto", 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        Mouse : {
+            enable  : true,
+            options : {
+                size  : 6,
+                sizeF : 24
+            }
+        },
+
+        LazyLoad : {
+            default : "/image/website/lazyload.svg"
+        },
+  
+        Style : {
+            aplayer          : "/css/APlayer.css",
+            archive          : "/css/archive.css",
+            base             : "/css/base.css",
+            clipboard        : "/css/clipboard.css",
+            code             : "/css/code.css",
+            donate           : "/css/donate.css",
+            fancybox         : "/css/jquery.fancybox.css",
+            footer           : "/css/footer.css",
+            iconfont         : "/iconfont/iconfont.css",
+            index            : "/css/index.css",
+            menuBubble       : "/css/menu-bubble.css",
+            mouse            : "/css/mouse.css",
+            page             : "/css/page.css",
+            post             : "/css/post.css",
+            search           : "/css/search.css",
+            tocbot           : "/css/tocbot.css",
+            valine           : "/css/valine.css",
+            waline           : "/css/waline.css",
+            walineCustom     : "/css/waline-custom.css"
+        },
+
+        Script: {
+            aplayer          : "/js/APlayer.min.js",
+            config           : "/js/require.config.js",
+            index            : "/js/index.js",
+            instantSearch    : "/js/instantsearch.min.js",
+            iscroll          : "/js/iscroll.js",
+            jQuery           : "/js/jquery-3.4.1.min.js",
+            loading          : "/js/loading.js",
+            meting           : "/js/Meting.min.js",
+            require          : "/js/require.min.js",
+            waline           : "/js/waline.mjs",
+            pageview         : "/js/pageview.mjs",
+            comment          : "/js/comment.mjs",
+        },
+
+        Font: {
+            LongCang    : "/font/LongCang.css",
+            Monda       : "/font/Monda.css",
+            NotoSansSC  : "/font/NotoSansSC.css",
+            NotoSerifSC : "/font/NotoSerifSC.css",
+            Playball    : "/font/Playball.css",
+            PTMono      : "/font/PTMono.css",
+            Roboto      : "/font/Roboto.css",
+            RobotoSlab  : "/font/RobotoSlab.css",
+            Rosario     : "/font/Rosario.css",
+            UbuntuMono  : "/font/UbuntuMono.css"
+        },
+
+        Suffix : {
+            about : "nice or terrible."
+        },
+            
+        Theme : {
+            url  : "",
+            name : ""
+        }  
+    };
+</script>
+    <script type="text/javascript" src="/js/index.js"></script>
+</body>
+</html>

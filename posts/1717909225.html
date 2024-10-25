@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>
+        
+            免杀之重识PE文件（一）
+        
+    </title>
+    <link rel="shortcut icon" href="#"/>
+
+    <link type="text/css" rel="stylesheet" href="/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSerifSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="/font/Roboto.css">
+    <link type="text/css" rel="stylesheet" href="/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="/css/base.css">
+    <link type="text/css" rel="stylesheet" href="/css/code.css">
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="TPA HACK-NOTE" type="application/atom+xml">
+</head>
+<body>
+    <a id="cover"></a>
+    <link type="text/css" rel="stylesheet" href="/css/post.css">
+<div id="header" class="header">
+    <div class="vertical">
+        <div class="inner">
+            
+                <h1 class="header-subtitle">免杀之重识PE文件（一）</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2024-06-20
+                        </span>
+                        
+                            
+                                <span id="/posts/1717909225.html" class="leancloud_visitors" data-flag-title="免杀之重识PE文件（一）">
+                                    <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                                </span>
+                            
+                              
+                        
+                    </p>
+                    
+                        
+                            <span class="category-color">web</span>
+                        
+                    
+                    
+                        
+                            <span class="tag-color">网络安全</span>
+                        
+                    
+                </div>
+            
+        </div>
+    </div>
+    
+</div>
+<div id="container">
+    
+        <!-- 文章页面 -->
+        <div id="article">
+            <div class="toc"></div>
+            <div class="article-body">
+                <h1 id="免杀之重识PE文件（一）"><a href="#免杀之重识PE文件（一）" class="headerlink" title="免杀之重识PE文件（一）"></a>免杀之重识PE文件（一）</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>虽然已经会免杀，但是对这些基础掌握不牢。因此重新学习一下。</p>
+<h2 id="PE文件"><a href="#PE文件" class="headerlink" title="PE文件"></a>PE文件</h2><h3 id="PE的指纹识别"><a href="#PE的指纹识别" class="headerlink" title="PE的指纹识别"></a>PE的指纹识别</h3><p>PE文件以MZ开头</p>
+<p><img src="/%E5%85%8D%E6%9D%80%E4%B9%8B%E9%87%8D%E8%AF%86PE%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89.assets/image-20240620223511055.png" alt="image-20240620223511055"></p>
+<p>在偏移3C的位置，硬编码为78，ASCII码为x</p>
+<p><img src="/%E5%85%8D%E6%9D%80%E4%B9%8B%E9%87%8D%E8%AF%86PE%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89.assets/image-20240620223645747.png" alt="image-20240620223645747"></p>
+<p>找到偏移78的位置，硬编码为50和45对应ASCII的PE</p>
+<p><img src="/%E5%85%8D%E6%9D%80%E4%B9%8B%E9%87%8D%E8%AF%86PE%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89.assets/image-20240620223745278.png" alt="image-20240620223745278"></p>
+<h3 id="PE结构"><a href="#PE结构" class="headerlink" title="PE结构"></a>PE结构</h3><p>PE结构分为4部分，DOS部分、PE文件头、节表、节数据</p>
+<p><img src="/%E5%85%8D%E6%9D%80%E4%B9%8B%E9%87%8D%E8%AF%86PE%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89.assets/image-20240620223941961.png" alt="image-20240620223941961"></p>
+<h4 id="DOS部分"><a href="#DOS部分" class="headerlink" title="DOS部分"></a>DOS部分</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_DOS_HEADER</span> &#123;</span>      </span><br><span class="line">WORD   e_magic;                <span class="comment">//通常为&quot;MZ&quot;     </span></span><br><span class="line">WORD   e_cblp;                      </span><br><span class="line">WORD   e_cp;                        </span><br><span class="line">WORD   e_crlc;                      </span><br><span class="line">WORD   e_cparhdr;                   </span><br><span class="line">WORD   e_minalloc;                  </span><br><span class="line">WORD   e_maxalloc;                  </span><br><span class="line">WORD   e_ss;                        </span><br><span class="line">WORD   e_sp;                        </span><br><span class="line">WORD   e_csum;                      </span><br><span class="line">WORD   e_ip;                        </span><br><span class="line">WORD   e_cs;                        </span><br><span class="line">WORD   e_lfarlc;                    </span><br><span class="line">WORD   e_ovno;                      </span><br><span class="line">WORD   e_res[<span class="number">4</span>];                    </span><br><span class="line">WORD   e_oemid;                     </span><br><span class="line">WORD   e_oeminfo;                   </span><br><span class="line">WORD   e_res2[<span class="number">10</span>];                  </span><br><span class="line">LONG   e_lfanew;                     <span class="comment">// 指向PE头的指针</span></span><br><span class="line">&#125; IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;</span><br></pre></td></tr></table></figure>
+
+<p>对照着看下</p>
+<p>要记得的是e_lfanew，是指向PE头的指针</p>
+<p>在PE头开始和DOS头中间的部分是DOS块没什么用，可以用来填充一小段shellcode</p>
+<p><img src="/%E5%85%8D%E6%9D%80%E4%B9%8B%E9%87%8D%E8%AF%86PE%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89.assets/image-20240620230740962.png" alt="image-20240620230740962"></p>
+<h4 id="PE头（NT头）"><a href="#PE头（NT头）" class="headerlink" title="PE头（NT头）"></a>PE头（NT头）</h4><p>PE头分为标识PE头、标准PE头、扩展PE头</p>
+<p>PE文件一些重要信息通常存储在标准PE头和扩展PE头中</p>
+<p>PE头结构体代码</p>
+<p>32位</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_NT_HEADERS</span> &#123;</span></span><br><span class="line">DWORD Signature;</span><br><span class="line">IMAGE_FILE_HEADER FileHeader;</span><br><span class="line">IMAGE_OPTIONAL_HEADER32 OptionalHeader;</span><br><span class="line">&#125; IMAGE_NT_HEADERS32, *PIMAGE_NT_HEADERS32;</span><br></pre></td></tr></table></figure>
+
+<p>64位</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_NT_HEADERS64</span> &#123;</span></span><br><span class="line"> DWORD Signature;  <span class="comment">//标识PE头,占2字节</span></span><br><span class="line">IMAGE_FILE_HEADER FileHeader;  <span class="comment">//标准PE头,占20字节</span></span><br><span class="line">IMAGE_OPTIONAL_HEADER64 OptionalHeader;  <span class="comment">//扩展PE头,占224字节</span></span><br><span class="line">&#125; IMAGE_NT_HEADERS64, *PIMAGE_NT_HEADERS64;</span><br></pre></td></tr></table></figure>
+
+<p><strong>标识PE头</strong></p>
+<p><img src="/%E5%85%8D%E6%9D%80%E4%B9%8B%E9%87%8D%E8%AF%86PE%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89.assets/image-20240620231613413.png" alt="image-20240620231613413"></p>
+<p><strong>标准PE头（文件头）</strong></p>
+<p>标准PE头通常占20个字节，包括了PE文件的基本属性和信息，例如文件类型、机器架构、入口点、标 志、段信息等等。其结构体代码如下所示</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_FILE_HEADER</span> &#123;</span></span><br><span class="line">WORD    Machine;  <span class="comment">//决定能运行在什么样的cpu上,若值为0则表示能任意cpu运行;值为14C表示能在intel386及后续版本;值为8664能运行在x64cpu上。因此可以用来判断程序是32位还是64位的</span></span><br><span class="line">WORD    NumberOfSections;  <span class="comment">//表示当前节的数量</span></span><br><span class="line">DWORD   TimeDateStamp;  <span class="comment">//编译器填写的时间戳,与文件创建或修改时间无关</span></span><br><span class="line">DWORD   PointerToSymbolTable;  <span class="comment">//与调试相关</span></span><br><span class="line">DWORD   NumberOfSymbols;  <span class="comment">//与调试相关</span></span><br><span class="line">WORD    SizeOfOptionalHeader; <span class="comment">//扩展PE头的大小,一般32位为E0,64位为F0</span></span><br><span class="line">WORD    Characteristics;  <span class="comment">//文件属性</span></span><br><span class="line">&#125; IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/%E5%85%8D%E6%9D%80%E4%B9%8B%E9%87%8D%E8%AF%86PE%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89.assets/image-20240620232116037.png" alt="image-20240620232116037"></p>
+<p><strong>拓展PE头（可选头）</strong></p>
+<p>扩展PE头通常占224个字节，以下结构体成员中有几个成员要重点注意 如果一个可执行文件它的dos部分+pe头+节表的共同大小为332,其 200, 那么 FileAlignment (文件对齐)的值为 SizeOfHeaders 的值应该为文件对齐的整数倍,所以 SizeOfHeaders 的值为400</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> IMAGE_NUMBEROF_DIRECTORY_ENTRIES 16</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_OPTIONAL_HEADER</span> &#123;</span></span><br><span class="line">   WORD    Magic;  <span class="comment">// PE文件的类型, 32位为0x10b, 64位为0x20b</span></span><br><span class="line">   BYTE    MajorLinkerVersion;  <span class="comment">//链接程序的主版本号</span></span><br><span class="line">   BYTE    MinorLinkerVersion;  <span class="comment">//链接程序的次版本号</span></span><br><span class="line">   DWORD   SizeOfCode;   <span class="comment">//所有代码节的总和</span></span><br><span class="line">   DWORD   SizeOfInitializedData;  <span class="comment">//初始化数据节的大小</span></span><br><span class="line">   DWORD   SizeOfUninitializedData;  <span class="comment">//未初始化节的大小</span></span><br><span class="line">   DWORD   AddressOfEntryPoint;  <span class="comment">//程序入口点</span></span><br><span class="line">   DWORD   BaseOfCode;  <span class="comment">//代码节的基地址</span></span><br><span class="line">   DWORD   BaseOfData;  <span class="comment">//数据节的基地址，仅在32位PE文件中有效</span></span><br><span class="line">   DWORD   ImageBase;  <span class="comment">//内存镜像基址</span></span><br><span class="line">   DWORD   SectionAlignment;  <span class="comment">//内存对齐</span></span><br><span class="line">   DWORD   FileAlignment;  <span class="comment">//文件对齐 </span></span><br><span class="line">   WORD    MajorOperatingSystemVersion; <span class="comment">//操作系统主版本号</span></span><br><span class="line">   WORD    MinorOperatingSystemVersion;  <span class="comment">//操作系统次版本号</span></span><br><span class="line">   WORD    MajorImageVersion;  <span class="comment">// PE文件的主版本号</span></span><br><span class="line">   WORD    MinorImageVersion;  <span class="comment">//PE文件的次版本号</span></span><br><span class="line">   WORD    MajorSubsystemVersion;  <span class="comment">//子系统主版本号</span></span><br><span class="line">   WORD    MinorSubsystemVersion;  <span class="comment">//子系统次版本号    </span></span><br><span class="line">   DWORD   Win32VersionValue;  <span class="comment">//Win32版本值，通常为0</span></span><br><span class="line">   DWORD   SizeOfImage;  <span class="comment">//内存中整个PE文件映射的尺寸,可比实际值大,必须是内存对齐的整数倍</span></span><br><span class="line">   DWORD   SizeOfHeaders;   <span class="comment">//所有头+节表按照文件对齐后的大小,否则加载会出错</span></span><br><span class="line">   DWORD   CheckSum;  <span class="comment">//校验和,用来判断文件是否被修改</span></span><br><span class="line">   WORD    Subsystem;  <span class="comment">//子系统 驱动程序(1) 图形界面(2) 控制台或dll(3)</span></span><br><span class="line">   WORD	DllCharacteristics;  <span class="comment">// DLL文件特性，与Subsystem的值有关 </span></span><br><span class="line">   DWORD   SizeOfStackReserve;  <span class="comment">//初始化时保留栈的大小</span></span><br><span class="line">   DWORD   SizeOfStackCommit;  <span class="comment">//初始化时实际提交的大小</span></span><br><span class="line">   DWORD   SizeOfHeapReserve;  <span class="comment">//初始化时保留堆的大小</span></span><br><span class="line">   DWORD   SizeOfHeapCommit;  <span class="comment">//初始化时实际提交的大小</span></span><br><span class="line">   DWORD   LoaderFlags;  <span class="comment">//调试相关</span></span><br><span class="line">   DWORD   NumberOfRvaAndSizes;  <span class="comment">//目录项数目</span></span><br><span class="line">   IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];</span><br><span class="line">&#125; IMAGE_OPTIONAL_HEADER32, *PIMAGE_OPTIONAL_HEADER32;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/%E5%85%8D%E6%9D%80%E4%B9%8B%E9%87%8D%E8%AF%86PE%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%80%EF%BC%89.assets/image-20240620233047860.png" alt="image-20240620233047860"></p>
+<h3 id="节表"><a href="#节表" class="headerlink" title="节表"></a>节表</h3><p>节表包含了PE文件中所有的节信息，每个节都包括了一个段的名称、大小、属性和数据等信息 节表是由一系列 IMAGE_SECTION_HEADER 结构的元素组成的结构体数组, 每个元素占40个字节</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> IMAGE_SIZEOF_SHORT_NAME  8</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> _<span class="title">IMAGE_SECTION_HEADER</span> &#123;</span></span><br><span class="line">    BYTE    Name[IMAGE_SIZEOF_SHORT_NAME]; <span class="comment">//ASCII字符串，当前节的名字</span></span><br><span class="line">    <span class="class"><span class="keyword">union</span> &#123;</span>   </span><br><span class="line">        DWORD   PhysicalAddress;  </span><br><span class="line">        DWORD   VirtualSize;</span><br><span class="line">     &#125; Misc; <span class="comment">//当前节实际的大小(内存未对齐)</span></span><br><span class="line">    DWORD   VirtualAddress;  <span class="comment">//节在内存中的偏移地址(真正的地址需加上Imagebase)</span></span><br><span class="line">    DWORD   SizeOfRawData;  <span class="comment">//节在文件对齐后的大小</span></span><br><span class="line">    DWORD   PointerToRawData;  <span class="comment">//节在文件中的偏移地址</span></span><br><span class="line">    DWORD   PointerToRelocations;</span><br><span class="line">    DWORD   PointerToLinenumbers;</span><br><span class="line">    WORD    NumberOfRelocations;</span><br><span class="line">    WORD	NumberOfLinenumbers;</span><br><span class="line">    DWORD   Characteristics;  <span class="comment">//节的属性,涉及到此节是否可读可写可执行</span></span><br><span class="line">&#125; IMAGE_SECTION_HEADER, *PIMAGE_SECTION_HEADER;</span><br></pre></td></tr></table></figure>
+
+<h3 id="节数据"><a href="#节数据" class="headerlink" title="节数据"></a>节数据</h3><p>节数据是PE文件中实际的二进制数据，它包含了PE文件中所有的代码、数据和资源等信息。每个节的数 据都位于PE文件中的一个连续的段中 PE文件中，不同的节用于存储不同类型的数据，通常包括以下几个节：</p>
+<p> data节：用于存储PE文件中的静态数据，它是可读写的，通常包含全局变量、静态变量、已初始化 的数据等等。</p>
+<p> rdata节：用于存储PE文件中的只读数据，它是只读的，通常包含字符串、常量、只读数据等等。</p>
+<p> text节：用于存储PE文件中的可执行代码，它是可执行的，通常包含程序的主要代码，例如函数、 指令等等 </p>
+<p>.rsrc节：用于存储PE文件中的资源，包括图标、位图、字符串、菜单等等，通常是只读的。 </p>
+<p>.reloc节：reloc节用于存储PE文件中的重定位信息，它包含了需要被修改的地址和偏移量等信息， 通常是只读写的。</p>
+<p> .tls节：用于存储PE文件中的线程本地存储(Thread Local Storage，TLS)相关信息，包括TLS索引、 初始化回调函数等等, 通常是可读写的。</p>
+
+                
+                <p class="end">__END__</p>
+            </div>
+            <div class="article-footer">
+                <div class="suffix-box">
+    <div class="suffix-box-left">
+        <img src="/image/sidebar/avatar.png" alt="tpaer">
+    </div>
+    <div class="suffix-box-right">
+        <span class="suffix-box-title">文章作者：</span>tpaer
+        <br>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/1717909225.html" target="_blank">免杀之重识PE文件（一）</a>
+        <br>
+        <span class="suffix-box-title">作者签名：</span>nice or terrible.
+        <br>
+        <span class="suffix-box-title">关于主题：</span><a href="" target="_blank"></a>
+        <br>
+        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+        <br>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+                
+                    <div class="category">
+                        分类：
+                        
+                            <a href="/category/web/">web</a>
+                        
+                    </div>
+                
+                
+                    <div class="tag">
+                        标签：
+                        
+                            <a href="/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+                        
+                    </div>
+                
+                <div class="article-prev-next">
+                    
+                        <a href="/posts/3130375664.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/3130375664.html" title="发布于 2024-06-24 09:51">JFinalcms系统的代码审计</a>
+                        <br>
+                    
+                    
+                        <a href="/posts/2274820670.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/2274820670.html" title="发布于 2024-06-13 02:43">代码审计PHPStorm断点调试</a>
+                    
+                </div>
+            </div>
+             
+        </div>
+    
+</div>
+    <div id="footer">
+    <div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>
+</div>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        
+            <div class="menu-notice">
+                <span class="iconfont icon-notice"></span>
+                <div class="notice">
+                    <span>Tpaer Blog</span>
+                </div>
+            </div>
+        
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar">
+                    <img src="/image/sidebar/avatar.png">
+                </div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user">
+                        
+                            <a href="https://onetpaer.github.io" target="_blank"><span>tpaer</span></a>
+                        
+                    </div>
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul>
+                    
+                        <li class=""><a href="/" class="" target="_self"><span class="iconfont icon-home-fill"></span>首页</a></li>
+                    
+                        <li class=""><a href="/category" class="" target="_self"><span class="iconfont icon-folder-fill"></span>分类</a></li>
+                    
+                        <li class=""><a href="/tag" class="" target="_self"><span class="iconfont icon-discount-fill"></span>标签</a></li>
+                    
+                        <li class=""><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
+                    
+                        <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
+                    
+                        <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
+                    
+                        <li class=""><a href="/comment" class="" target="_self"><span class="iconfont icon-comments-fill"></span>留言板</a></li>
+                    
+                </ul> 
+            </div> 
+            <div class="menu-link">
+                <div class="box">
+                    <div class="image-box"></div>
+                </div>
+                
+                    <a name="GitHub" href="https://github.com/onetpaer" class="" target="_blank" data=""><span class="iconfont icon-github"></span></a>
+                
+            </div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="/css/search.css">
+<script type="text/javascript" src="/js/iscroll.js"></script>
+<script type="text/javascript" src="/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+    
+    <link type="text/css" rel="stylesheet" href="/css/APlayer.css">
+    <script type="text/javascript" src="/js/APlayer.min.js"></script>
+    <script type="text/javascript" src="/js/Meting.min.js"></script>
+    <script>
+        var meting_api = 'https://api.i-meto.com/meting/api?server=:server&type=:type&id=:id&auth=:auth&r=:r';
+    </script>
+    <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+
+    <div class="wrap-right">
+    <div class="wrap-right-hide">
+         <div class="wrap-right-button favorites">
+            <div class="iconbox" switch="false">
+                <span class="iconfont icon-favorites"></span>
+            </div>
+            <span class="icontext">关注</span>
+         </div>
+        <div class="wrap-right-button search">
+            <div class="iconbox">
+                <span class="iconfont icon-search-menu"></span>
+            </div>
+            <span class="icontext">搜索</span>
+        </div>
+        <div class="wrap-right-button menu-button">
+            <div class="iconbox">
+                <span class="iconfont icon-menu"></span>
+            </div>
+            <span class="icontext">菜单</span>
+        </div>
+        <div class="wrap-right-button mode">
+            <div class="light">
+                <div class="iconbox">
+                    <span class="iconfont icon-daymode"></span>
+                </div>
+                <span class="icontext">浅色模式</span>
+            </div>
+            <div class="dark">
+                <div class="iconbox">
+                    <span class="iconfont icon-nightmode-fill"></span>
+                </div>
+                <span class="icontext">深色模式</span>
+            </div>
+        </div>
+        <div class="wrap-right-button bottom">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">跳至底部</span>
+        </div>
+    </div>
+    <div class="wrap-right-show">
+        <div class="wrap-right-button set">
+            <div class="iconbox">
+                <span class="iconfont icon-setting"></span>
+            </div>
+            <span class="icontext">设置</span>
+        </div>
+        <div class="wrap-right-button top">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">返回顶部</span>
+        </div>
+    </div>
+</div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : "onetpaer",
+        GitHubRepositories : "hacker-note",
+
+        User             : "tpaer",
+        UserAvatar       : "/image/sidebar/avatar.png",
+        WebsiteStartDate : "2023-01-01",
+        Home             : "https://onetpaer.github.io",
+
+        WebsiteTitleBlur         : "(◍´꒳`◍) Hi, Tpaer BLOG",
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : "(*´∇｀*) Welcome back!",
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : {
+            light : "/image/website/logo/tlogo.png",
+            dark  : "/image/website/logo/tlogo.png"
+        },
+
+        ProgressBar : {
+            id       : "topProgressBar",
+            color    : "#77B6FF",
+            height   : "2px",
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound : {
+                tension  : 16,
+                friction : 5
+            },
+            spinner : {
+                id     : "spinner",
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : "#F0F0F0",
+                    stroke     : "#272633",
+                    base       : "",
+                    child      : "#272633"
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : "rgba(255, 255, 255, .2)",
+            clearOffset : 0.3
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : "60%",
+            colorBrightness  : "50%",
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : "random",
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                "/image/header/home.png",
+            
+        ],
+        HomeBannerText  : "Cybersecurity",
+
+        ArticleHeaderImage : [
+            
+                "/image/header/article.png",
+            
+                "/image/header/article3.png",
+            
+                "/image/header/article4.png",
+            
+        ],
+
+        OtherBannerText : "All because of love",
+
+        Error : {
+            icon    : "icon-swimming",
+            title   : "PAGE NOT FOUND",
+            content : [
+                
+                    "很抱歉，您访问的页面不存在！",
+                
+                    "可能是输入地址有误或该地址已变更。",
+                
+            ],
+            buttons : [
+                
+                    {
+                        icon  : "icon-home",
+                        text  : "返回首页",
+                        href  : "/",
+                        class : ""
+                    },
+                
+            ]
+        },
+
+        MenuNotice : {
+            enable : true,
+            notice : "Tpaer Blog",
+            speed  : 20
+        },
+        MenuList : [
+            
+                {
+                    name   : "首页",
+                    icon   : "icon-home-fill",
+                    href   : "/",
+                    type   : "index",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "分类",
+                    icon   : "icon-folder-fill",
+                    href   : "/category",
+                    type   : "category",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "标签",
+                    icon   : "icon-discount-fill",
+                    href   : "/tag",
+                    type   : "tag",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "归档",
+                    icon   : "icon-calendar-fill",
+                    href   : "/archive",
+                    type   : "archive",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "关于",
+                    icon   : "icon-about-fill",
+                    href   : "/about",
+                    type   : "about",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "搜索",
+                    icon   : "icon-search-menu",
+                    href   : "javascript:;",
+                    type   : "",
+                    class  : "search",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "留言板",
+                    icon   : "icon-comments-fill",
+                    href   : "/comment",
+                    type   : "comment",
+                    class  : "",
+                    target : "_self"
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        name   : "GitHub",
+                        icon   : "icon-github",
+                        href   : "https://github.com/onetpaer",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : "<div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>",
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                "Tpaer Blog",
+                            
+                                "",
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : "",
+
+        Donate : {
+            paypal  : "",
+            bitcoin : "",
+            alipay  : "/image/donate/alipay.png",
+            wechat  : "/image/donate/wechat.png"
+        },
+
+        Search : {
+            applicationID : "TIB5V1ZDSN",
+            apiKey        : "eb10299c1d35e47748cf90761834aec4",
+            indexName     : "hack-note",
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : "搜索",
+                empty       : "未发现与 「${query}」 相关的内容",
+                stats       : "${hits} 条相关条目，使用了 ${time} 毫秒",
+            }
+        }, 
+
+        Comment : {
+            switch : true,
+            type   : "Valine",
+        },
+
+        Waline : {
+            el              : ".comments-content",
+            serverURL       : "",
+            path            : window.location.pathname,
+            meta            : "['nick', 'mail', 'link']",
+            requiredMeta    : "['nick', 'mail']",
+            pageSize        : 10,
+            lang            : "zh-cn",
+            locale: {
+                admin       : "博主",
+                anonymous   : "匿名用户",
+                sofa        : "快来做第一个评论的人吧 ~",
+                placeholder : "你是我一生只会遇见一次的惊喜...",
+            },
+            dark            : "html[color-scheme='dark']",
+            search          : false,
+            pageview        : true,
+            comment         : true,
+            copyright       : false,
+        },
+
+        Valine : {
+            el             : ".comments-content",
+            appId          : "srhKtvWPQTWYKh3qX8G8M7v0-gzGzoHsz",
+            appKey         : "8uVSP1q6UlALVC5igYfIfv2h",
+            serverURLs     : "",
+            placeholder    : "你是我一生只会遇见一次的惊喜...",
+            avatar         : "mm",
+            meta           : "nick,mail,link",
+            requiredFields : "nick,mail",
+            pageSize       : 5,
+            lang           : "zh-cn",
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : ".toc",
+            contentSelector       : ".article-body",
+            headingSelector       : "h1, h2, h3, h4, h5",
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : ".toc",
+            positionFixedClass    : "toc-fixed",
+            fixedSidebarOffset    : "",
+        },
+
+        Require : {
+            baseUrl     : "/js/",
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : "Meting"
+        },
+        APlayer : {
+            container : ".aplayer",
+            fixed     : true,
+            autoplay  : false,
+            loop      : "all",
+            order     : "random",
+            preload   : "auto",
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : "Endless Tears",
+                        artist : "CLIFF EDGE",
+                        cover  : "/music/cover/Endless Tears.jpg",
+                        url    : "/music/song/Endless Tears.mp3",
+                        lrc    : "/music/lrc/Endless Tears.lrc"
+                    },
+                
+            ]
+        },
+        Meting : {
+            api      : "https://api.i-meto.com/meting/api",
+            id       : "3778678", 
+            lrcshow  : false, 
+            server   : "netease", 
+            type     : "playlist", 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : "all", 
+            order    : "random", 
+            preload  : "auto", 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        Mouse : {
+            enable  : true,
+            options : {
+                size  : 6,
+                sizeF : 24
+            }
+        },
+
+        LazyLoad : {
+            default : "/image/website/lazyload.svg"
+        },
+  
+        Style : {
+            aplayer          : "/css/APlayer.css",
+            archive          : "/css/archive.css",
+            base             : "/css/base.css",
+            clipboard        : "/css/clipboard.css",
+            code             : "/css/code.css",
+            donate           : "/css/donate.css",
+            fancybox         : "/css/jquery.fancybox.css",
+            footer           : "/css/footer.css",
+            iconfont         : "/iconfont/iconfont.css",
+            index            : "/css/index.css",
+            menuBubble       : "/css/menu-bubble.css",
+            mouse            : "/css/mouse.css",
+            page             : "/css/page.css",
+            post             : "/css/post.css",
+            search           : "/css/search.css",
+            tocbot           : "/css/tocbot.css",
+            valine           : "/css/valine.css",
+            waline           : "/css/waline.css",
+            walineCustom     : "/css/waline-custom.css"
+        },
+
+        Script: {
+            aplayer          : "/js/APlayer.min.js",
+            config           : "/js/require.config.js",
+            index            : "/js/index.js",
+            instantSearch    : "/js/instantsearch.min.js",
+            iscroll          : "/js/iscroll.js",
+            jQuery           : "/js/jquery-3.4.1.min.js",
+            loading          : "/js/loading.js",
+            meting           : "/js/Meting.min.js",
+            require          : "/js/require.min.js",
+            waline           : "/js/waline.mjs",
+            pageview         : "/js/pageview.mjs",
+            comment          : "/js/comment.mjs",
+        },
+
+        Font: {
+            LongCang    : "/font/LongCang.css",
+            Monda       : "/font/Monda.css",
+            NotoSansSC  : "/font/NotoSansSC.css",
+            NotoSerifSC : "/font/NotoSerifSC.css",
+            Playball    : "/font/Playball.css",
+            PTMono      : "/font/PTMono.css",
+            Roboto      : "/font/Roboto.css",
+            RobotoSlab  : "/font/RobotoSlab.css",
+            Rosario     : "/font/Rosario.css",
+            UbuntuMono  : "/font/UbuntuMono.css"
+        },
+
+        Suffix : {
+            about : "nice or terrible."
+        },
+            
+        Theme : {
+            url  : "",
+            name : ""
+        }  
+    };
+</script>
+    <script type="text/javascript" src="/js/index.js"></script>
+</body>
+</html>

